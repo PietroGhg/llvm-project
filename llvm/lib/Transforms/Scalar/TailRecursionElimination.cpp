@@ -48,7 +48,6 @@
 //     frames is very primitive.
 //
 //===----------------------------------------------------------------------===//
-
 #include "llvm/Transforms/Scalar/TailRecursionElimination.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallPtrSet.h"
@@ -497,6 +496,7 @@ void TailRecursionEliminator::createTailRecurseLoopHeader(CallInst *CI) {
   HeaderBB->setName("tailrecurse");
   BranchInst *BI = BranchInst::Create(HeaderBB, NewEntry);
   BI->setDebugLoc(CI->getDebugLoc());
+  LLVM_DEBUG(dbgs() << "created loop header: " << *BI << "\n");
 
   // If this function has self recursive calls in the tail position where some
   // are marked tail and some are not, only transform one flavor or another.
@@ -516,8 +516,10 @@ void TailRecursionEliminator::createTailRecurseLoopHeader(CallInst *CI) {
                               NEBI = NewEntry->begin();
          OEBI != E;)
       if (AllocaInst *AI = dyn_cast<AllocaInst>(OEBI++))
-        if (isa<ConstantInt>(AI->getArraySize()))
+        if (isa<ConstantInt>(AI->getArraySize())){
           AI->moveBefore(&*NEBI);
+	  LLVM_DEBUG(dbgs() << "instruction moved: " << *AI << "\n");
+	}
 
   // Now that we have created a new block, which jumps to the entry
   // block, insert a PHI node for each argument of the function.
@@ -527,6 +529,7 @@ void TailRecursionEliminator::createTailRecurseLoopHeader(CallInst *CI) {
   for (Function::arg_iterator I = F.arg_begin(), E = F.arg_end(); I != E; ++I) {
     PHINode *PN =
         PHINode::Create(I->getType(), 2, I->getName() + ".tr", InsertPos);
+    LLVM_DEBUG(dbgs() << "Created PHI node: " << *PN << "\n");
     I->replaceAllUsesWith(PN); // Everyone use the PHI node now!
     PN->addIncoming(&*I, NewEntry);
     ArgumentPHIs.push_back(PN);
@@ -540,7 +543,9 @@ void TailRecursionEliminator::createTailRecurseLoopHeader(CallInst *CI) {
   if (!RetType->isVoidTy()) {
     Type *BoolType = Type::getInt1Ty(F.getContext());
     RetPN = PHINode::Create(RetType, 2, "ret.tr", InsertPos);
+    LLVM_DEBUG(dbgs() << "Created return PHI node: " << *RetPN << "\n");
     RetKnownPN = PHINode::Create(BoolType, 2, "ret.known.tr", InsertPos);
+    LLVM_DEBUG(dbgs() << "Created return bool PHI node: " << *RetKnownPN << "\n");
 
     RetPN->addIncoming(UndefValue::get(RetType), NewEntry);
     RetKnownPN->addIncoming(ConstantInt::getFalse(BoolType), NewEntry);
@@ -561,6 +566,7 @@ void TailRecursionEliminator::insertAccumulator(Instruction *AccRecInstr) {
   pred_iterator PB = pred_begin(HeaderBB), PE = pred_end(HeaderBB);
   AccPN = PHINode::Create(F.getReturnType(), std::distance(PB, PE) + 1,
                           "accumulator.tr", &HeaderBB->front());
+  LLVM_DEBUG(dbgs() << "Created accumulator PHI node: " << *AccPN << "\n");
 
   // Loop over all of the predecessors of the tail recursion block.  For the
   // real entry into the function we seed the PHI with the identity constant for
@@ -650,6 +656,7 @@ bool TailRecursionEliminator::eliminateCall(CallInst *CI) {
       // store the result in our return value PHI node.
       SelectInst *SI = SelectInst::Create(
           RetKnownPN, RetPN, Ret->getReturnValue(), "current.ret.tr", Ret);
+      LLVM_DEBUG(dbgs() << "Adding select instruction: " << *SI << "\n");
       RetSelects.push_back(SI);
 
       RetPN->addIncoming(SI, BB);
@@ -663,10 +670,13 @@ bool TailRecursionEliminator::eliminateCall(CallInst *CI) {
   // Now that all of the PHI nodes are in place, remove the call and
   // ret instructions, replacing them with an unconditional branch.
   BranchInst *NewBI = BranchInst::Create(HeaderBB, Ret);
+  LLVM_DEBUG(dbgs() << "Created branch: " << *NewBI << "\n");
   NewBI->setDebugLoc(CI->getDebugLoc());
 
   BB->getInstList().erase(Ret);  // Remove return.
+  LLVM_DEBUG(dbgs() << "Erased return\n");
   BB->getInstList().erase(CI);   // Remove call.
+  LLVM_DEBUG(dbgs() << "Erased call\n");
   DTU.applyUpdates({{DominatorTree::Insert, BB, HeaderBB}});
   ++NumEliminated;
   return true;
@@ -738,6 +748,7 @@ void TailRecursionEliminator::cleanupAndFinalize() {
   for (PHINode *PN : ArgumentPHIs) {
     // If the PHI Node is a dynamic constant, replace it with the value it is.
     if (Value *PNV = SimplifyInstruction(PN, F.getParent()->getDataLayout())) {
+      LLVM_DEBUG(dbgs() << "Eliminating silly PHI node: " << *PN << "\n");
       PN->replaceAllUsesWith(PNV);
       PN->eraseFromParent();
     }
@@ -747,9 +758,10 @@ void TailRecursionEliminator::cleanupAndFinalize() {
     if (RetSelects.empty()) {
       // If we didn't insert any select instructions, then we know we didn't
       // store a return value and we can remove the PHI nodes we inserted.
+      LLVM_DEBUG(dbgs() << "Eliminating useless PHI node: " << *RetPN << "\n");
       RetPN->dropAllReferences();
       RetPN->eraseFromParent();
-
+      LLVM_DEBUG(dbgs() << "Eliminating useless PHI node: " << *RetKnownPN << "\n");
       RetKnownPN->dropAllReferences();
       RetKnownPN->eraseFromParent();
 
@@ -768,6 +780,7 @@ void TailRecursionEliminator::cleanupAndFinalize() {
                                      RI->getOperand(0));
           AccRecInstrNew->insertBefore(RI);
           RI->setOperand(0, AccRecInstrNew);
+	  LLVM_DEBUG(dbgs() << "Inserting copy of accumulator instruction: " << *AccRecInstrNew << "\n");
         }
       }
     } else {
@@ -782,6 +795,7 @@ void TailRecursionEliminator::cleanupAndFinalize() {
             RetKnownPN, RetPN, RI->getOperand(0), "current.ret.tr", RI);
         RetSelects.push_back(SI);
         RI->setOperand(0, SI);
+	LLVM_DEBUG(dbgs() << "Inserting select instruction before return: " << *SI << "\n");
       }
 
       if (AccPN) {
@@ -795,6 +809,7 @@ void TailRecursionEliminator::cleanupAndFinalize() {
                                      SI->getFalseValue());
           AccRecInstrNew->insertBefore(SI);
           SI->setFalseValue(AccRecInstrNew);
+	  LLVM_DEBUG(dbgs() << "Inserting copy of accumulator instruction before select: " << *AccRecInstrNew << "\n");
         }
       }
     }
@@ -844,7 +859,6 @@ bool TailRecursionEliminator::eliminate(Function &F,
   }
 
   TRE.cleanupAndFinalize();
-
   return MadeChange;
 }
 

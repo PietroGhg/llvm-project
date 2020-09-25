@@ -24,6 +24,10 @@
 # Nested build directory
 /build*
 
+# My install directory is in there
+build-debug
+install-debug
+
 #==============================================================================#
 # Explicit files to ignore (only matches one).
 #==============================================================================#

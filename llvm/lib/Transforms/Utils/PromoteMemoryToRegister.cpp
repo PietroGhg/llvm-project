@@ -13,7 +13,7 @@
 // appropriate.
 //
 //===----------------------------------------------------------------------===//
-
+#define DEBUG_TYPE "mem2reg"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/STLExtras.h"
@@ -338,9 +338,12 @@ static void removeIntrinsicUsers(AllocaInst *AI) {
           Inst->dropDroppableUse(UU);
           continue;
         }
+	LLVM_DEBUG(dbgs() << "Eliminating use of use of alloca: "
+		   << *Inst << "\n");
         Inst->eraseFromParent();
       }
     }
+    LLVM_DEBUG(dbgs() << "Eliminating use of alloca: " << *I << "\n");
     I->eraseFromParent();
   }
 }
@@ -410,6 +413,7 @@ static bool rewriteSingleStoreAlloca(AllocaInst *AI, AllocaInfo &Info,
         !isKnownNonZero(ReplVal, DL, 0, AC, LI, &DT))
       addAssumeNonNull(AC, LI);
 
+    LLVM_DEBUG(dbgs() << "Ereasing dominated load: " << *LI << "\n");
     LI->replaceAllUsesWith(ReplVal);
     LI->eraseFromParent();
     LBI.deleteValue(LI);
@@ -427,9 +431,11 @@ static bool rewriteSingleStoreAlloca(AllocaInst *AI, AllocaInfo &Info,
     DII->eraseFromParent();
   }
   // Remove the (now dead) store and alloca.
+  LLVM_DEBUG(dbgs() << "Ereasing dominated store: " << *Info.OnlyStore << "\n");
   Info.OnlyStore->eraseFromParent();
   LBI.deleteValue(Info.OnlyStore);
 
+  LLVM_DEBUG(dbgs() << "Ereasing dominated alloca: " << *AI << "\n");
   AI->eraseFromParent();
   return true;
 }
@@ -510,7 +516,7 @@ static bool promoteSingleBlockAlloca(AllocaInst *AI, const AllocaInfo &Info,
 
       LI->replaceAllUsesWith(ReplVal);
     }
-
+    LLVM_DEBUG(dbgs() << "Ereasing load in same bb as alloca: " << *LI << "\n");
     LI->eraseFromParent();
     LBI.deleteValue(LI);
   }
@@ -523,10 +529,11 @@ static bool promoteSingleBlockAlloca(AllocaInst *AI, const AllocaInfo &Info,
       DIBuilder DIB(*AI->getModule(), /*AllowUnresolved*/ false);
       ConvertDebugDeclareToDebugValue(DII, SI, DIB);
     }
+    LLVM_DEBUG(dbgs() << "Ereasing store in same bb as alloca: " << *SI << "\n");
     SI->eraseFromParent();
     LBI.deleteValue(SI);
   }
-
+  LLVM_DEBUG(dbgs() << "Erasing alloca with only uses in same bb: " << *AI << "\n");
   AI->eraseFromParent();
 
   // The alloca's debuginfo can be removed as well.
@@ -557,6 +564,7 @@ void PromoteMem2Reg::run() {
 
     if (AI->use_empty()) {
       // If there are no uses of the alloca, just delete it now.
+      LLVM_DEBUG(dbgs() << "Ereasing alloca with no uses: " << *AI << "\n");
       AI->eraseFromParent();
 
       // Remove the alloca from the Allocas list, since it has been processed
@@ -668,6 +676,7 @@ void PromoteMem2Reg::run() {
     // tree. Just delete the users now.
     if (!A->use_empty())
       A->replaceAllUsesWith(UndefValue::get(A->getType()));
+    LLVM_DEBUG(dbgs() << "Ereasing alloca after ssa: " << *A << "\n");
     A->eraseFromParent();
   }
 
@@ -698,6 +707,7 @@ void PromoteMem2Reg::run() {
       if (Value *V = SimplifyInstruction(PN, SQ)) {
         PN->replaceAllUsesWith(V);
         PN->eraseFromParent();
+	LLVM_DEBUG(dbgs() << "Ereasing PHI node: " << *PN << "\n");
         NewPhiNodes.erase(I++);
         EliminatedAPHI = true;
         continue;
@@ -857,6 +867,7 @@ bool PromoteMem2Reg::QueuePhiNode(BasicBlock *BB, unsigned AllocaNo,
   PN = PHINode::Create(Allocas[AllocaNo]->getAllocatedType(), getNumPreds(BB),
                        Allocas[AllocaNo]->getName() + "." + Twine(Version++),
                        &BB->front());
+  LLVM_DEBUG(dbgs() << "Adding PHI node before alloca: " << *PN << "\n"); 
   ++NumPHIInsert;
   PhiToAllocaMap[PN] = AllocaNo;
   return true;
@@ -956,6 +967,7 @@ NextIteration:
 
       // Anything using the load now uses the current value.
       LI->replaceAllUsesWith(V);
+      LLVM_DEBUG(dbgs() << "Erasing load: " << *LI << "\n");
       BB->getInstList().erase(LI);
     } else if (StoreInst *SI = dyn_cast<StoreInst>(I)) {
       // Delete this instruction and mark the name as the current holder of the
@@ -976,6 +988,7 @@ NextIteration:
       IncomingLocs[AllocaNo] = SI->getDebugLoc();
       for (DbgVariableIntrinsic *DII : AllocaDbgDeclares[ai->second])
         ConvertDebugDeclareToDebugValue(DII, SI, DIB);
+      LLVM_DEBUG(dbgs() << "Erasing store: " << *SI << "\n");
       BB->getInstList().erase(SI);
     }
   }
