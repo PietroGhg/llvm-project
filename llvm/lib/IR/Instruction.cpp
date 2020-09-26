@@ -18,6 +18,8 @@
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Operator.h"
 #include "llvm/IR/Type.h"
+#include "llvm/Support/Debug.h"
+#define DEBUG_TYPE "instr"
 using namespace llvm;
 
 Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
@@ -77,7 +79,12 @@ void Instruction::removeFromParent() {
   getParent()->getInstList().remove(getIterator());
 }
 
-iplist<Instruction>::iterator Instruction::eraseFromParent() {
+iplist<Instruction>::iterator Instruction::eraseFromParent(StringRef reason) {
+  auto N = this->getMetadata("ID");
+  const MDOperand& O = N->getOperand(0);
+  ConstantAsMetadata* CAM = cast<ConstantAsMetadata>(O);
+  LLVM_DEBUG(dbgs() << "Erasing: " << *CAM << " reason " << reason << "\n");
+  
   return getParent()->getInstList().erase(getIterator());
 }
 

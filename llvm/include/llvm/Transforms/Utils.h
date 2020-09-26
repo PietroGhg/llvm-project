@@ -14,6 +14,7 @@
 #ifndef LLVM_TRANSFORMS_UTILS_H
 #define LLVM_TRANSFORMS_UTILS_H
 
+#include "llvm/Pass.h"
 namespace llvm {
 
 class ModulePass;
@@ -161,6 +162,9 @@ FunctionPass *createAssumeSimplifyPass();
 // don't block SCEV.
 //
 Pass *createCanonicalizeFreezeInLoopsPass();
+  FunctionPass *createAddUniqueIDPass();
+
 } // namespace llvm
+
 
 #endif

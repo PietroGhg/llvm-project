@@ -22,6 +22,8 @@
 #include "llvm/ADT/iterator_range.h"
 #include "llvm/IR/Attributes.h"
 #include "llvm/IR/Comdat.h"
+#include "llvm/IR/Constant.h"
+#include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/GlobalAlias.h"
@@ -175,6 +177,8 @@ public:
 /// @name Member Variables
 /// @{
 private:
+  unsigned long NextID;
+  std::vector<std::string> log;
   LLVMContext &Context;           ///< The LLVMContext from which types and
                                   ///< constants are allocated.
   GlobalListType GlobalList;      ///< The Global Variables in the module
@@ -204,6 +208,17 @@ private:
 /// @name Constructors
 /// @{
 public:
+  ConstantAsMetadata* getNewID(){
+    Type* T = Type::getInt64Ty(Context);
+    Constant* C = ConstantInt::get(T, NextID);
+    NextID++;
+    return ConstantAsMetadata::get(C);
+  }
+
+  void addLogEntry(const std::string& Entry){
+    log.push_back(Entry);
+  }
+    
   /// The Module constructor. Note that there is no default constructor. You
   /// must provide a name for the module upon construction.
   explicit Module(StringRef ModuleID, LLVMContext& C);

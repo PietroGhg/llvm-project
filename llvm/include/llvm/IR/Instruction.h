@@ -122,7 +122,7 @@ public:
   /// This method unlinks 'this' from the containing basic block and deletes it.
   ///
   /// \returns an iterator pointing to the element after the erased one
-  SymbolTableList<Instruction>::iterator eraseFromParent();
+  SymbolTableList<Instruction>::iterator eraseFromParent(StringRef Reason = "unknown");
 
   /// Insert an unlinked instruction into a basic block immediately before
   /// the specified instruction.

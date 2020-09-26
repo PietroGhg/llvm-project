@@ -442,6 +442,7 @@ void initializeWinEHPreparePass(PassRegistry&);
 void initializeWriteBitcodePassPass(PassRegistry&);
 void initializeWriteThinLTOBitcodePass(PassRegistry&);
 void initializeXRayInstrumentationPass(PassRegistry&);
+  void initializeAddUniqueIDPass(PassRegistry&);
 
 } // end namespace llvm
 
