@@ -21,7 +21,7 @@ class Function;
 namespace llvm {
 
 struct AddUniqueIDPass : PassInfoMixin<AddUniqueIDPass> {
-  PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM);
+  PreservedAnalyses run(Module &F, FunctionAnalysisManager &AM);
 };
 } //end namespace llvm
 

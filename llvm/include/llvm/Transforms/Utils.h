@@ -162,7 +162,7 @@ FunctionPass *createAssumeSimplifyPass();
 // don't block SCEV.
 //
 Pass *createCanonicalizeFreezeInLoopsPass();
-  FunctionPass *createAddUniqueIDPass();
+  ModulePass *createAddUniqueIDPass();
 
 } // namespace llvm
 

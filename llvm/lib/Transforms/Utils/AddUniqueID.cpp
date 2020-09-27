@@ -21,20 +21,21 @@
 using namespace llvm;
 
 namespace {
-  struct AddUniqueID : public FunctionPass {
+  struct AddUniqueID : public ModulePass {
     static char ID;
 
-    AddUniqueID() : FunctionPass(ID) {
+    AddUniqueID() : ModulePass(ID) {
       initializeAddUniqueIDPass(*PassRegistry::getPassRegistry());
     }
 
 
-    bool runOnFunction(llvm::Function& F) override{
-      Module* M = F.getParent();
-      for(auto& BB : F){
-	for(auto& I : BB){
-	  MDNode* N = MDNode::get(M->getContext(), M->getNewID());
-	  I.setMetadata("ID", N);
+    bool runOnModule(llvm::Module& M) override{
+      for(auto& F : M){
+	for(auto& BB : F){
+	  for(auto& I : BB){
+	    MDNode* N = MDNode::get(M.getContext(), M.getNewID());
+	    I.setMetadata("ID", N);
+	  }
 	}
       }
       return true;
@@ -52,17 +53,18 @@ INITIALIZE_PASS_END(AddUniqueID, "addUnique", "Add Unique ID ",
                     false, false)*/
 
 
-FunctionPass *llvm::createAddUniqueIDPass() {
+ModulePass *llvm::createAddUniqueIDPass() {
   return new AddUniqueID();
 }
 
-PreservedAnalyses AddUniqueIDPass::run(llvm::Function &F,
+PreservedAnalyses AddUniqueIDPass::run(llvm::Module &M,
                                         FunctionAnalysisManager &AM) {
-  Module* M = F.getParent();
-  for(auto& BB : F){
-    for(auto& I : BB){
-      MDNode* N = MDNode::get(M->getContext(), M->getNewID());
-      I.setMetadata("ID", N);
+  for(auto& F : M){
+    for(auto& BB : F){
+      for(auto& I : BB){
+	MDNode* N = MDNode::get(M.getContext(), M.getNewID());
+	I.setMetadata("ID", N);
+      }
     }
   }
 

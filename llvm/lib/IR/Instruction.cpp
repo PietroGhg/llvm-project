@@ -11,36 +11,49 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/IR/Instruction.h"
+#include "llvm/ADT/StringRef.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/MDBuilder.h"
+#include "llvm/IR/Metadata.h"
 #include "llvm/IR/Operator.h"
 #include "llvm/IR/Type.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/IR/Module.h"
 #define DEBUG_TYPE "instr"
 using namespace llvm;
 
 Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
-                         Instruction *InsertBefore)
+                         Instruction *InsertBefore, StringRef Reason)
   : User(ty, Value::InstructionVal + it, Ops, NumOps), Parent(nullptr) {
-
+  
   // If requested, insert this instruction into a basic block...
   if (InsertBefore) {
     BasicBlock *BB = InsertBefore->getParent();
     assert(BB && "Instruction to insert before is not in a basic block!");
     BB->getInstList().insert(InsertBefore->getIterator(), this);
+    Module* M = this->getModule();
+    auto* ID = M->getNewID();
+    MDNode* N = MDNode::get(M->getContext(), ID);
+    this->setMetadata("ID", N);
+    LLVM_DEBUG(dbgs() << "Creating instruction: " << *ID << " reason " << Reason << "\n");
   }
 }
 
 Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
-                         BasicBlock *InsertAtEnd)
+                         BasicBlock *InsertAtEnd, StringRef Reason)
   : User(ty, Value::InstructionVal + it, Ops, NumOps), Parent(nullptr) {
 
   // append this instruction into the basic block
   assert(InsertAtEnd && "Basic block to append to may not be NULL!");
   InsertAtEnd->getInstList().push_back(this);
+  Module* M = this->getModule();
+  auto* ID = M->getNewID();
+  MDNode* N = MDNode::get(M->getContext(), ID);
+  this->setMetadata("ID", N);
+  LLVM_DEBUG(dbgs() << "Creating instruction: " << *ID << " reason " << Reason << "\n");
 }
 
 Instruction::~Instruction() {

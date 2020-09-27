@@ -816,9 +816,9 @@ protected:
   }
 
   Instruction(Type *Ty, unsigned iType, Use *Ops, unsigned NumOps,
-              Instruction *InsertBefore = nullptr);
+              Instruction *InsertBefore = nullptr, StringRef Reason = "unknown");
   Instruction(Type *Ty, unsigned iType, Use *Ops, unsigned NumOps,
-              BasicBlock *InsertAtEnd);
+              BasicBlock *InsertAtEnd, StringRef Reason = "unknown");
 
 private:
   /// Create a copy of this instruction.
