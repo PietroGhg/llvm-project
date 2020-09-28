@@ -20,6 +20,7 @@
 #include "llvm/IR/Metadata.h"
 #include "llvm/IR/Operator.h"
 #include "llvm/IR/Type.h"
+#include "llvm/MC/MCInst.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/IR/Module.h"
 #define DEBUG_TYPE "instr"
@@ -34,6 +35,7 @@ Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
     BasicBlock *BB = InsertBefore->getParent();
     assert(BB && "Instruction to insert before is not in a basic block!");
     BB->getInstList().insert(InsertBefore->getIterator(), this);
+
     Module* M = this->getModule();
     auto* ID = M->getNewID();
     MDNode* N = MDNode::get(M->getContext(), ID);
@@ -93,10 +95,15 @@ void Instruction::removeFromParent() {
 }
 
 iplist<Instruction>::iterator Instruction::eraseFromParent(StringRef reason) {
-  auto N = this->getMetadata("ID");
-  const MDOperand& O = N->getOperand(0);
-  ConstantAsMetadata* CAM = cast<ConstantAsMetadata>(O);
-  LLVM_DEBUG(dbgs() << "Erasing: " << *CAM << " reason " << reason << "\n");
+  MDNode *N = this->getMetadata("ID");
+  if(N){
+    const MDOperand& O = N->getOperand(0);
+    ConstantAsMetadata* CAM = cast<ConstantAsMetadata>(O);
+    LLVM_DEBUG(dbgs() << "Erasing: " << *CAM << " reason " << reason << "\n");
+  }
+  else{
+    //LLVM_DEBUG(dbgs() << "Erasing: " << *this << " no ID\n");
+  }
   
   return getParent()->getInstList().erase(getIterator());
 }
@@ -104,12 +111,28 @@ iplist<Instruction>::iterator Instruction::eraseFromParent(StringRef reason) {
 /// Insert an unlinked instruction into a basic block immediately before the
 /// specified instruction.
 void Instruction::insertBefore(Instruction *InsertPos) {
+  Module* M = this->getModule();
+  auto* ID = M->getNewID();
+  MDNode* N = MDNode::get(M->getContext(), ID);
+  this->setMetadata("ID", N);
+  LLVM_DEBUG(dbgs() <<
+	     "Inserting instruction: " << *ID
+	     /*<< " reason " << Reason */ //MYTODO: add reason
+	     << "\n");
   InsertPos->getParent()->getInstList().insert(InsertPos->getIterator(), this);
 }
 
 /// Insert an unlinked instruction into a basic block immediately after the
 /// specified instruction.
 void Instruction::insertAfter(Instruction *InsertPos) {
+  Module* M = this->getModule();
+  auto* ID = M->getNewID();
+  MDNode* N = MDNode::get(M->getContext(), ID);
+  this->setMetadata("ID", N);
+  LLVM_DEBUG(dbgs() <<
+	     "Inserting instruction: " << *ID
+	     /*<< " reason " << Reason */ //MYTODO: add reason
+	     << "\n");
   InsertPos->getParent()->getInstList().insertAfter(InsertPos->getIterator(),
                                                     this);
 }
@@ -128,6 +151,20 @@ void Instruction::moveBefore(BasicBlock &BB,
                              SymbolTableList<Instruction>::iterator I) {
   assert(I == BB.end() || I->getParent() == &BB);
   BB.getInstList().splice(I, getParent()->getInstList(), getIterator());
+  Module* M = getModule();
+  ConstantAsMetadata* NewID = M->getNewID();
+  MDNode* NewN = MDNode::get(M->getContext(), NewID);
+  MDNode* OldN = this->getMetadata("ID");
+  if(!OldN){
+    print(dbgs());
+    LLVM_DEBUG(dbgs() << " No ID\n");
+  }
+  else{
+    const MDOperand& O = OldN->getOperand(0);
+    ConstantAsMetadata* OldID = cast<ConstantAsMetadata>(O);
+    LLVM_DEBUG(dbgs() << "Moving " << *OldID << " to " << *NewID << "\n");
+    setMetadata("ID", NewN);
+  }
 }
 
 bool Instruction::comesBefore(const Instruction *Other) const {
