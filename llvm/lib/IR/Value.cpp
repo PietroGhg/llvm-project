@@ -479,6 +479,17 @@ void Value::doRAUW(Value *New, ReplaceMetadataUses ReplaceMetaUses) {
          "this->replaceAllUsesWith(expr(this)) is NOT valid!");
   assert(New->getType() == getType() &&
          "replaceAllUses of value with new value of different type!");
+  if(Instruction* OldI = dyn_cast<Instruction>(this)){
+    if(Instruction* NewI = dyn_cast<Instruction>(New)){	
+      NewI->setID(OldI->getModule());
+      LLVM_DEBUG(dbgs() << "Replacing " << *OldI->getID()
+		 << " with " << *NewI->getID() << "\n");
+    }
+    else{
+      LLVM_DEBUG(dbgs() << "Replacing " << *OldI->getID()
+		 << " with Value " << *New << "\n");
+    }
+  }
 
   // Notify all ValueHandles (if present) that this value is going away.
   if (HasValueHandle)

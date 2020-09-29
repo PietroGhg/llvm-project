@@ -19,7 +19,9 @@
 #include "llvm/ADT/None.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/ilist_node.h"
+#include "llvm/IR/Constant.h"
 #include "llvm/IR/DebugLoc.h"
+#include "llvm/IR/Metadata.h"
 #include "llvm/IR/SymbolTableListTraits.h"
 #include "llvm/IR/User.h"
 #include "llvm/IR/Value.h"
@@ -86,6 +88,17 @@ public:
   Instruction(const Instruction &) = delete;
   Instruction &operator=(const Instruction &) = delete;
 
+  /// Returns true when the instruction has an ID metadata
+  bool hasID();
+  /// Returns the ID metadata
+  ConstantAsMetadata* getID();
+  /// Sets the ID
+  void setID();
+  /// Sets the ID, the M parameter is used if the instruction is not inserted yet
+  void setID(Module* M);
+  /// Changes the ID to a new one (instruction moved)
+  void setNewID();
+
   /// Specialize the methods defined in Value, as we know that an instruction
   /// can only be used by other instructions.
   Instruction       *user_back()       { return cast<Instruction>(*user_begin());}
@@ -122,7 +135,7 @@ public:
   /// This method unlinks 'this' from the containing basic block and deletes it.
   ///
   /// \returns an iterator pointing to the element after the erased one
-  SymbolTableList<Instruction>::iterator eraseFromParent(StringRef Reason = "unknown");
+  SymbolTableList<Instruction>::iterator eraseFromParent();
 
   /// Insert an unlinked instruction into a basic block immediately before
   /// the specified instruction.
@@ -287,6 +300,7 @@ public:
     if (!hasMetadata()) return nullptr;
     return getMetadataImpl(Kind);
   }
+  
 
   /// Get all metadata attached to this Instruction. The first element of each
   /// pair returned is the KindID, the second element is the metadata value.
@@ -816,9 +830,9 @@ protected:
   }
 
   Instruction(Type *Ty, unsigned iType, Use *Ops, unsigned NumOps,
-              Instruction *InsertBefore = nullptr, StringRef Reason = "unknown");
+              Instruction *InsertBefore = nullptr);
   Instruction(Type *Ty, unsigned iType, Use *Ops, unsigned NumOps,
-              BasicBlock *InsertAtEnd, StringRef Reason = "unknown");
+              BasicBlock *InsertAtEnd);
 
 private:
   /// Create a copy of this instruction.

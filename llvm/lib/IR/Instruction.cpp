@@ -27,7 +27,7 @@
 using namespace llvm;
 
 Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
-                         Instruction *InsertBefore, StringRef Reason)
+                         Instruction *InsertBefore)
   : User(ty, Value::InstructionVal + it, Ops, NumOps), Parent(nullptr) {
   
   // If requested, insert this instruction into a basic block...
@@ -36,27 +36,57 @@ Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
     assert(BB && "Instruction to insert before is not in a basic block!");
     BB->getInstList().insert(InsertBefore->getIterator(), this);
 
-    Module* M = this->getModule();
-    auto* ID = M->getNewID();
-    MDNode* N = MDNode::get(M->getContext(), ID);
-    this->setMetadata("ID", N);
-    LLVM_DEBUG(dbgs() << "Creating instruction: " << *ID << " reason " << Reason << "\n");
+    setID();
   }
 }
 
 Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
-                         BasicBlock *InsertAtEnd, StringRef Reason)
+                         BasicBlock *InsertAtEnd)
   : User(ty, Value::InstructionVal + it, Ops, NumOps), Parent(nullptr) {
 
   // append this instruction into the basic block
   assert(InsertAtEnd && "Basic block to append to may not be NULL!");
   InsertAtEnd->getInstList().push_back(this);
-  Module* M = this->getModule();
+  setID();
+}
+
+bool Instruction::hasID(){
+  MDNode* N = getMetadata("ID");
+  return N != nullptr;
+}
+
+void Instruction::setNewID(){
+  if(hasID()){
+    Module* M = getModule();
+    auto* ID = M->getNewID();
+    MDNode* N = MDNode::get(M->getContext(), ID);
+    setMetadata("ID", N);
+  }
+  //MYTODO: else setid() ?
+}
+
+void Instruction::setID(){
+  Module* M = getModule();
+  assert(M && "Attempting to set ID of instruction with no module.");
+  setID(M);
+}
+
+void Instruction::setID(Module* M){
+  if(hasID())
+    return;
+  //else
   auto* ID = M->getNewID();
   MDNode* N = MDNode::get(M->getContext(), ID);
   this->setMetadata("ID", N);
-  LLVM_DEBUG(dbgs() << "Creating instruction: " << *ID << " reason " << Reason << "\n");
+  LLVM_DEBUG(dbgs() << "Creating instruction: " << *ID << "\n");
 }
+
+ConstantAsMetadata* Instruction::getID(){
+  MDNode* N = getMetadata("ID");
+  const MDOperand& O = N->getOperand(0);
+  return cast<ConstantAsMetadata>(O);
+}
+  
 
 Instruction::~Instruction() {
   assert(!Parent && "Instruction still linked in the program!");
@@ -94,12 +124,9 @@ void Instruction::removeFromParent() {
   getParent()->getInstList().remove(getIterator());
 }
 
-iplist<Instruction>::iterator Instruction::eraseFromParent(StringRef reason) {
-  MDNode *N = this->getMetadata("ID");
-  if(N){
-    const MDOperand& O = N->getOperand(0);
-    ConstantAsMetadata* CAM = cast<ConstantAsMetadata>(O);
-    LLVM_DEBUG(dbgs() << "Erasing: " << *CAM << " reason " << reason << "\n");
+iplist<Instruction>::iterator Instruction::eraseFromParent() {
+  if(hasID()){
+    LLVM_DEBUG(dbgs() << "Erasing: " << *getID() << "\n");
   }
   else{
     //LLVM_DEBUG(dbgs() << "Erasing: " << *this << " no ID\n");
@@ -111,13 +138,9 @@ iplist<Instruction>::iterator Instruction::eraseFromParent(StringRef reason) {
 /// Insert an unlinked instruction into a basic block immediately before the
 /// specified instruction.
 void Instruction::insertBefore(Instruction *InsertPos) {
-  Module* M = this->getModule();
-  auto* ID = M->getNewID();
-  MDNode* N = MDNode::get(M->getContext(), ID);
-  this->setMetadata("ID", N);
+  setID(InsertPos->getModule());
   LLVM_DEBUG(dbgs() <<
-	     "Inserting instruction: " << *ID
-	     /*<< " reason " << Reason */ //MYTODO: add reason
+	     "Inserting instruction: " << *getID()
 	     << "\n");
   InsertPos->getParent()->getInstList().insert(InsertPos->getIterator(), this);
 }
@@ -125,13 +148,9 @@ void Instruction::insertBefore(Instruction *InsertPos) {
 /// Insert an unlinked instruction into a basic block immediately after the
 /// specified instruction.
 void Instruction::insertAfter(Instruction *InsertPos) {
-  Module* M = this->getModule();
-  auto* ID = M->getNewID();
-  MDNode* N = MDNode::get(M->getContext(), ID);
-  this->setMetadata("ID", N);
+  setID(InsertPos->getModule());
   LLVM_DEBUG(dbgs() <<
-	     "Inserting instruction: " << *ID
-	     /*<< " reason " << Reason */ //MYTODO: add reason
+	     "Inserting instruction: " << *getID()
 	     << "\n");
   InsertPos->getParent()->getInstList().insertAfter(InsertPos->getIterator(),
                                                     this);
@@ -151,20 +170,8 @@ void Instruction::moveBefore(BasicBlock &BB,
                              SymbolTableList<Instruction>::iterator I) {
   assert(I == BB.end() || I->getParent() == &BB);
   BB.getInstList().splice(I, getParent()->getInstList(), getIterator());
-  Module* M = getModule();
-  ConstantAsMetadata* NewID = M->getNewID();
-  MDNode* NewN = MDNode::get(M->getContext(), NewID);
-  MDNode* OldN = this->getMetadata("ID");
-  if(!OldN){
-    print(dbgs());
-    LLVM_DEBUG(dbgs() << " No ID\n");
-  }
-  else{
-    const MDOperand& O = OldN->getOperand(0);
-    ConstantAsMetadata* OldID = cast<ConstantAsMetadata>(O);
-    LLVM_DEBUG(dbgs() << "Moving " << *OldID << " to " << *NewID << "\n");
-    setMetadata("ID", NewN);
-  }
+
+  setNewID();
 }
 
 bool Instruction::comesBefore(const Instruction *Other) const {
