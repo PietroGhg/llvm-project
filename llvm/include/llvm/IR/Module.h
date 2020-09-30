@@ -34,6 +34,8 @@
 #include "llvm/IR/SymbolTableListTraits.h"
 #include "llvm/Support/CBindingWrapping.h"
 #include "llvm/Support/CodeGen.h"
+#include "llvm/Support/Debug.h"
+#include "llvm/Support/raw_ostream.h"
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
@@ -178,7 +180,7 @@ public:
 /// @{
 private:
   unsigned long NextID;
-  std::vector<std::string> log;
+  std::vector<std::string> Log; //MYTODO: make this metadata
   LLVMContext &Context;           ///< The LLVMContext from which types and
                                   ///< constants are allocated.
   GlobalListType GlobalList;      ///< The Global Variables in the module
@@ -208,16 +210,18 @@ private:
 /// @name Constructors
 /// @{
 public:
-  ConstantAsMetadata* getNewID(){
-    Type* T = Type::getInt64Ty(Context);
-    Constant* C = ConstantInt::get(T, NextID);
-    NextID++;
-    return ConstantAsMetadata::get(C);
-  }
-
-  void addLogEntry(const std::string& Entry){
-    log.push_back(Entry);
-  }
+  ConstantAsMetadata* getNewID();
+  void addEntry(std::string& Entry);
+  void addCreateEntry(const ConstantAsMetadata* C);
+  void addRemoveEntry(const ConstantAsMetadata* C);
+  void addMoveEntry(const ConstantAsMetadata* Old,
+		    const ConstantAsMetadata* New);
+  void addReplaceEntry(const ConstantAsMetadata* Old,
+		       const ConstantAsMetadata* New);
+  void addReplaceWithValueEntry(const ConstantAsMetadata* Old,
+				const Value* New);
+  
+  
     
   /// The Module constructor. Note that there is no default constructor. You
   /// must provide a name for the module upon construction.

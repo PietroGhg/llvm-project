@@ -53,6 +53,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#define DEBUG_TYPE "mylog"
 
 using namespace llvm;
 
@@ -85,6 +86,56 @@ Module::~Module() {
   FunctionList.clear();
   AliasList.clear();
   IFuncList.clear();
+}
+
+ConstantAsMetadata* Module::getNewID(){
+  Type* T = Type::getInt64Ty(Context);
+  Constant* C = ConstantInt::get(T, NextID);
+  NextID++;
+  return ConstantAsMetadata::get(C);
+}
+
+void Module::addEntry(std::string& Entry){
+  LLVM_DEBUG(dbgs() << Entry << "\n");
+  Log.push_back(Entry);
+}
+
+void Module::addCreateEntry(const ConstantAsMetadata* C){
+  std::string E;
+  raw_string_ostream O(E);
+  O << "Creating " << *C;
+  addEntry(O.str());
+}
+
+void Module::addRemoveEntry(const ConstantAsMetadata* C){
+  std::string E;
+  raw_string_ostream O(E);
+  O << "Removing " << *C;
+  addEntry(O.str());
+}
+
+void Module::addMoveEntry(const ConstantAsMetadata* Old,
+			  const ConstantAsMetadata* New){
+  std::string E;
+  raw_string_ostream O(E);
+  O << "Moving " << *Old << " to " << *New;
+  addEntry(O.str());
+}
+
+void Module::addReplaceEntry(const ConstantAsMetadata* Old,
+			     const ConstantAsMetadata* New){
+  std::string E;
+  raw_string_ostream O(E);
+  O << "Replacing " << *Old << " with " << *New;
+  addEntry(O.str());
+}
+
+void Module::addReplaceWithValueEntry(const ConstantAsMetadata* Old,
+				      const Value* New){
+  std::string E;
+  raw_string_ostream O(E);
+  O << "Replacing " << *Old << " with value " << *New;
+  addEntry(O.str());
 }
 
 std::unique_ptr<RandomNumberGenerator>

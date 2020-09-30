@@ -482,12 +482,10 @@ void Value::doRAUW(Value *New, ReplaceMetadataUses ReplaceMetaUses) {
   if(Instruction* OldI = dyn_cast<Instruction>(this)){
     if(Instruction* NewI = dyn_cast<Instruction>(New)){	
       NewI->setID(OldI->getModule());
-      LLVM_DEBUG(dbgs() << "Replacing " << *OldI->getID()
-		 << " with " << *NewI->getID() << "\n");
+      OldI->getModule()->addReplaceEntry(OldI->getID(), NewI->getID());
     }
     else{
-      LLVM_DEBUG(dbgs() << "Replacing " << *OldI->getID()
-		 << " with Value " << *New << "\n");
+      OldI->getModule()->addReplaceWithValueEntry(OldI->getID(), New);
     }
   }
 

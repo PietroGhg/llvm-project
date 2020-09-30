@@ -59,6 +59,7 @@ void Instruction::setNewID(){
   if(hasID()){
     Module* M = getModule();
     auto* ID = M->getNewID();
+    M->addMoveEntry(getID(), ID);
     MDNode* N = MDNode::get(M->getContext(), ID);
     setMetadata("ID", N);
   }
@@ -78,7 +79,7 @@ void Instruction::setID(Module* M){
   auto* ID = M->getNewID();
   MDNode* N = MDNode::get(M->getContext(), ID);
   this->setMetadata("ID", N);
-  LLVM_DEBUG(dbgs() << "Creating instruction: " << *ID << "\n");
+  M->addCreateEntry(ID);
 }
 
 ConstantAsMetadata* Instruction::getID(){
@@ -126,7 +127,7 @@ void Instruction::removeFromParent() {
 
 iplist<Instruction>::iterator Instruction::eraseFromParent() {
   if(hasID()){
-    LLVM_DEBUG(dbgs() << "Erasing: " << *getID() << "\n");
+    getModule()->addRemoveEntry(getID());
   }
   else{
     //LLVM_DEBUG(dbgs() << "Erasing: " << *this << " no ID\n");
@@ -139,9 +140,6 @@ iplist<Instruction>::iterator Instruction::eraseFromParent() {
 /// specified instruction.
 void Instruction::insertBefore(Instruction *InsertPos) {
   setID(InsertPos->getModule());
-  LLVM_DEBUG(dbgs() <<
-	     "Inserting instruction: " << *getID()
-	     << "\n");
   InsertPos->getParent()->getInstList().insert(InsertPos->getIterator(), this);
 }
 
@@ -149,9 +147,6 @@ void Instruction::insertBefore(Instruction *InsertPos) {
 /// specified instruction.
 void Instruction::insertAfter(Instruction *InsertPos) {
   setID(InsertPos->getModule());
-  LLVM_DEBUG(dbgs() <<
-	     "Inserting instruction: " << *getID()
-	     << "\n");
   InsertPos->getParent()->getInstList().insertAfter(InsertPos->getIterator(),
                                                     this);
 }

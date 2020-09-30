@@ -672,7 +672,6 @@ bool TailRecursionEliminator::eliminateCall(CallInst *CI) {
   BranchInst *NewBI = BranchInst::Create(HeaderBB, Ret);
   LLVM_DEBUG(dbgs() << "Created branch: " << *NewBI << "\n");
   NewBI->setDebugLoc(CI->getDebugLoc());
-
   BB->getInstList().erase(Ret);  // Remove return.
   LLVM_DEBUG(dbgs() << "Erased return\n");
   BB->getInstList().erase(CI);   // Remove call.
