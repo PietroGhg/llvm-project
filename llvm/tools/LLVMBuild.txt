@@ -55,6 +55,7 @@ subdirectories =
  llvm-split
  llvm-undname
  opt
+ opt-parser
  verify-uselistorder
 
 [component_0]
