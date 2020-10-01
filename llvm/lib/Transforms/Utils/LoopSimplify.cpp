@@ -452,6 +452,7 @@ static BasicBlock *insertUniqueBackedgeBlock(Loop *L, BasicBlock *Preheader,
     // eliminate the PHI Node.
     if (HasUniqueIncomingValue) {
       NewPN->replaceAllUsesWith(UniqueValue);
+      NewPN->logErase();
       BEBlock->getInstList().erase(NewPN);
     }
   }

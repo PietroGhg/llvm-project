@@ -515,6 +515,7 @@ void ProcessSwitchInst(SwitchInst *SI,
 
   // We are now done with the switch instruction, delete it.
   BasicBlock *OldDefault = SI->getDefaultDest();
+  SI->logErase();
   OrigBlock->getInstList().erase(SI);
 
   // If the Default block has no more predecessors just add it to DeleteList.

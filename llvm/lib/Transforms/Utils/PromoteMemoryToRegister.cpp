@@ -968,6 +968,7 @@ NextIteration:
       // Anything using the load now uses the current value.
       LI->replaceAllUsesWith(V);
       LLVM_DEBUG(dbgs() << "Erasing load: " << *LI << "\n");
+      LI->logErase();
       BB->getInstList().erase(LI);
     } else if (StoreInst *SI = dyn_cast<StoreInst>(I)) {
       // Delete this instruction and mark the name as the current holder of the
@@ -989,6 +990,7 @@ NextIteration:
       for (DbgVariableIntrinsic *DII : AllocaDbgDeclares[ai->second])
         ConvertDebugDeclareToDebugValue(DII, SI, DIB);
       LLVM_DEBUG(dbgs() << "Erasing store: " << *SI << "\n");
+      SI->logErase();
       BB->getInstList().erase(SI);
     }
   }

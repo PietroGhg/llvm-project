@@ -496,6 +496,7 @@ llvm::UnrollAndJamLoop(Loop *L, unsigned Count, unsigned TripCount,
   if (CompletelyUnroll) {
     while (PHINode *Phi = dyn_cast<PHINode>(ForeBlocksFirst[0]->begin())) {
       Phi->replaceAllUsesWith(Phi->getIncomingValueForBlock(Preheader));
+      Phi->logErase();
       Phi->getParent()->getInstList().erase(Phi);
     }
   } else {

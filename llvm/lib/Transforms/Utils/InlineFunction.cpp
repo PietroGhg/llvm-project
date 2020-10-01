@@ -2478,6 +2478,7 @@ llvm::InlineResult llvm::InlineFunction(CallBase &CB, InlineFunctionInfo &IFI,
   OrigBB->getInstList().splice(Br->getIterator(), CalleeEntry->getInstList());
 
   // Remove the unconditional branch.
+  Br->logErase();
   OrigBB->getInstList().erase(Br);
 
   // Now we can remove the CalleeEntry block, which is now empty.

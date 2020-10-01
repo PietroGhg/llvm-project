@@ -589,6 +589,7 @@ static void cloneLoopBlocks(
       else
         VMap[&*I] = LatchVal;
     }
+    NewPHI->logErase();
     cast<BasicBlock>(VMap[Header])->getInstList().erase(NewPHI);
   }
 

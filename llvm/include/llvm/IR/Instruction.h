@@ -98,6 +98,8 @@ public:
   void setID(Module* M);
   /// Changes the ID to a new one (instruction moved)
   void setNewID();
+  /// Logs its own erasing
+  void logErase();
 
   /// Specialize the methods defined in Value, as we know that an instruction
   /// can only be used by other instructions.

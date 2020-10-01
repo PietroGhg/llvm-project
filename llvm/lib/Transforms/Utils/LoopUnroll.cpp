@@ -231,8 +231,10 @@ void llvm::simplifyLoopAfterUnroll(Loop *L, bool SimplifyIVs, LoopInfo *LI,
       if (Value *V = SimplifyInstruction(Inst, {DL, nullptr, DT, AC}))
         if (LI->replacementPreservesLCSSAForm(Inst, V))
           Inst->replaceAllUsesWith(V);
-      if (isInstructionTriviallyDead(Inst))
-        BB->getInstList().erase(Inst);
+      if (isInstructionTriviallyDead(Inst)){	
+	Inst->logErase();
+	BB->getInstList().erase(Inst);
+      }
     }
   }
 
@@ -612,6 +614,7 @@ LoopUnrollResult llvm::UnrollLoop(Loop *L, UnrollLoopOptions ULO, LoopInfo *LI,
             if (It > 1 && L->contains(InValI))
               InVal = LastValueMap[InValI];
           VMap[OrigPHI] = InVal;
+	  NewPHI->logErase();
           New->getInstList().erase(NewPHI);
         }
 
@@ -684,6 +687,7 @@ LoopUnrollResult llvm::UnrollLoop(Loop *L, UnrollLoopOptions ULO, LoopInfo *LI,
   for (PHINode *PN : OrigPHINode) {
     if (CompletelyUnroll) {
       PN->replaceAllUsesWith(PN->getIncomingValueForBlock(Preheader));
+      PN->logErase();
       Header->getInstList().erase(PN);
     } else if (ULO.Count > 1) {
       Value *InVal = PN->removeIncomingValue(LatchBlock, false);

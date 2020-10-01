@@ -2069,6 +2069,7 @@ unsigned llvm::changeToUnreachable(Instruction *I, bool UseLLVMTrap,
   while (BBI != BBE) {
     if (!BBI->use_empty())
       BBI->replaceAllUsesWith(UndefValue::get(BBI->getType()));
+    BBI->logErase();
     BB->getInstList().erase(BBI++);
     ++NumInstrsRemoved;
   }

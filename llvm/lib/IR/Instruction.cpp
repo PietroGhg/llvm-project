@@ -47,7 +47,9 @@ Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
   // append this instruction into the basic block
   assert(InsertAtEnd && "Basic block to append to may not be NULL!");
   InsertAtEnd->getInstList().push_back(this);
-  setID();
+  if(Function* F = InsertAtEnd->getParent())
+    if(Module* M =F->getParent())
+      setID(M);
 }
 
 bool Instruction::hasID(){
@@ -87,7 +89,12 @@ ConstantAsMetadata* Instruction::getID(){
   const MDOperand& O = N->getOperand(0);
   return cast<ConstantAsMetadata>(O);
 }
-  
+
+void Instruction::logErase(){
+  if(hasID()){
+    getModule()->addRemoveEntry(getID());
+  }
+}
 
 Instruction::~Instruction() {
   assert(!Parent && "Instruction still linked in the program!");
@@ -122,16 +129,12 @@ const Function *Instruction::getFunction() const {
 }
 
 void Instruction::removeFromParent() {
+  logErase();
   getParent()->getInstList().remove(getIterator());
 }
 
 iplist<Instruction>::iterator Instruction::eraseFromParent() {
-  if(hasID()){
-    getModule()->addRemoveEntry(getID());
-  }
-  else{
-    //LLVM_DEBUG(dbgs() << "Erasing: " << *this << " no ID\n");
-  }
+  logErase();
   
   return getParent()->getInstList().erase(getIterator());
 }

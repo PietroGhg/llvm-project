@@ -672,8 +672,10 @@ bool TailRecursionEliminator::eliminateCall(CallInst *CI) {
   BranchInst *NewBI = BranchInst::Create(HeaderBB, Ret);
   LLVM_DEBUG(dbgs() << "Created branch: " << *NewBI << "\n");
   NewBI->setDebugLoc(CI->getDebugLoc());
+  Ret->logErase();
   BB->getInstList().erase(Ret);  // Remove return.
   LLVM_DEBUG(dbgs() << "Erased return\n");
+  CI->logErase();
   BB->getInstList().erase(CI);   // Remove call.
   LLVM_DEBUG(dbgs() << "Erased call\n");
   DTU.applyUpdates({{DominatorTree::Insert, BB, HeaderBB}});

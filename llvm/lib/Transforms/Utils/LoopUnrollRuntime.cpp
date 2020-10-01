@@ -383,6 +383,7 @@ CloneLoopBlocks(Loop *L, Value *NewIter, const bool CreateRemainderLoop,
         NewPHI->removeIncomingValue(Latch, false);
       } else {
         VMap[&*I] = NewPHI->getIncomingValueForBlock(Preheader);
+	NewPHI->logErase();
         cast<BasicBlock>(VMap[Header])->getInstList().erase(NewPHI);
       }
     } else {

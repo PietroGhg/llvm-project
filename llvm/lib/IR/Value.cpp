@@ -480,12 +480,14 @@ void Value::doRAUW(Value *New, ReplaceMetadataUses ReplaceMetaUses) {
   assert(New->getType() == getType() &&
          "replaceAllUses of value with new value of different type!");
   if(Instruction* OldI = dyn_cast<Instruction>(this)){
-    if(Instruction* NewI = dyn_cast<Instruction>(New)){	
-      NewI->setID(OldI->getModule());
-      OldI->getModule()->addReplaceEntry(OldI->getID(), NewI->getID());
-    }
-    else{
-      OldI->getModule()->addReplaceWithValueEntry(OldI->getID(), New);
+    if(OldI->hasID()){
+      if(Instruction* NewI = dyn_cast<Instruction>(New)){	
+	NewI->setID(OldI->getModule());
+	OldI->getModule()->addReplaceEntry(OldI->getID(), NewI->getID());
+      }
+      else{
+	OldI->getModule()->addReplaceWithValueEntry(OldI->getID(), New);
+      }
     }
   }
 
