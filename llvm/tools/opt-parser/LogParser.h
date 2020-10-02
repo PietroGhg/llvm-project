@@ -1,10 +1,13 @@
+#pragma once
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include "llvm/IR/Module.h"
 #include "llvm/IRReader/IRReader.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/SourceMgr.h"
+#include "Log.h"
 
 using namespace llvm;
 /// Type for the log of a single optimization pass
@@ -59,15 +62,8 @@ inline void parseLog(std::fstream& F, LLVMContext& Ctx){
     }
   }
 
-  errs() << "there are " << Modules.size() << " modules\n";
-  for(auto& M : Modules) {
-    errs() << *(M.get());
-    errs() << "\n";
-  }
-
-  for(auto&& Log : Logs){
-    errs() << "---------\n";
-    for(auto& Entry : Log)
-      errs() << Entry << "\n";
-  }
+  std::vector<Log> TrueLogs;
+  for(auto LogStr : Logs){
+    std::cout << Log(LogStr).toString() ;
+  } 
 }
