@@ -23,6 +23,7 @@
 #include "llvm/MC/MCInst.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/IR/Module.h"
+#include <bits/stdint-uintn.h>
 #define DEBUG_TYPE "instr"
 using namespace llvm;
 
@@ -50,6 +51,15 @@ Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
   if(Function* F = InsertAtEnd->getParent())
     if(Module* M =F->getParent())
       setID(M);
+}
+
+unsigned long Instruction::getIDInt(){
+  assert(hasID());
+  ConstantAsMetadata* A = getID();
+  Constant* B = A->getValue();
+  ConstantInt* C = dyn_cast<ConstantInt>(B);
+  APInt D = C->getValue();
+  return D.getLimitedValue();
 }
 
 bool Instruction::hasID(){

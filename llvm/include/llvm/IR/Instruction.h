@@ -92,6 +92,8 @@ public:
   bool hasID();
   /// Returns the ID metadata
   ConstantAsMetadata* getID();
+  /// Returns the ID as integer number
+  unsigned long getIDInt();
   /// Sets the ID
   void setID();
   /// Sets the ID, the M parameter is used if the instruction is not inserted yet

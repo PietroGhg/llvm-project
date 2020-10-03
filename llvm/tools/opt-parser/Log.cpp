@@ -11,24 +11,40 @@ void boost::throw_exception(std::exception const & E){
   exit(-1);
 }
 
-OneInstrEntry::OneInstrEntry(const string& LogStr){
+Entry::Entry(EntryKind Kind, const string& LogStr): Kind(Kind){
+  switch(Kind){
+  case(EntryKind::Create):
+  case(EntryKind::Remove):
+    makeOneInstrEntry(LogStr);
+    break;
+  case(EntryKind::Move):
+    makeMoveEntry(LogStr);
+    break;
+  case(EntryKind::Replace):
+    makeReplaceEntry(LogStr);
+    break;
+  }
+}
+    
+
+void Entry::makeOneInstrEntry(const string& LogStr){
   //split the string to retrieve the id of the instruction and set it
   //the LogStr looks like TYPE i64 ID, so the ID will be at Tokens[2].
   vector<string> Tokens;
   boost::algorithm::split(Tokens, LogStr, boost::algorithm::is_any_of(" "));
-  InstID = stoi(Tokens[2]);
+  InstID1 = stoi(Tokens[2]);
 }
 
-MoveEntry::MoveEntry(const string& LogStr){
+void Entry::makeMoveEntry(const string& LogStr){
   //the LogStr looks like Moving i64 IDOld to i64 IDNew
   //IDOld is at Tokens[2], IDNew at Tokens[5]
   vector<string> Tokens;
   boost::algorithm::split(Tokens, LogStr, boost::algorithm::is_any_of(" "));
-  InstIDOld = stoi(Tokens[2]);
-  InstIDNew = stoi(Tokens[5]);
+  InstID1 = stoi(Tokens[2]);
+  InstID2 = stoi(Tokens[5]);
 }
 
-ReplaceEntry::ReplaceEntry(const string& LogStr){
+void Entry::makeReplaceEntry(const string& LogStr){
   //the LogStr either looks like:
   //Replacing i64 IDOld with i64 IDNew
   //Replacing i64 IDOld with Value type name
@@ -36,9 +52,9 @@ ReplaceEntry::ReplaceEntry(const string& LogStr){
   //then disambiguate the value and set either the oldID or the value
   vector<string> Tokens;
   boost::algorithm::split(Tokens, LogStr, boost::algorithm::is_any_of(" "));
-  InstIDOld = stoi(Tokens[2]);
+  InstID1 = stoi(Tokens[2]);
   if(Tokens[4] == "i64"){
-    InstIDNew = stoi(Tokens[5]);
+    InstID2 = stoi(Tokens[5]);
     ReplaceWithValue = false;
   }
   else if(Tokens[4] == "value"){
@@ -50,21 +66,36 @@ ReplaceEntry::ReplaceEntry(const string& LogStr){
   } 
 }
 
+string Entry::toString() const {
+  switch(Kind){
+  case(EntryKind::Create):
+    return "Creating " + to_string(InstID1);
+  case(EntryKind::Remove):
+    return "Removing " + to_string(InstID1);
+  case(EntryKind::Move):
+    return "Moving " + to_string(InstID1) + " to " + to_string(InstID2);
+  case(EntryKind::Replace):
+    return "Replacing " + to_string(InstID1) + " " +
+      (ReplaceWithValue ? "Value " + Value : to_string(InstID2));
+  }
+  assert(false && "Opsie\n");
+}
+
   
 
 Log::Log(const vector<string>& LogStrings, const string& Name): PassName(Name){
   for(auto LogStr : LogStrings){
     if(LogStr.rfind("Creating", 0) == 0){
-      Entries.push_back(new CreateEntry(LogStr));
+      Entries.emplace_back(EntryKind::Create, LogStr);
     }
     else if(LogStr.rfind("Removing", 0) == 0){
-      Entries.push_back(new RemoveEntry(LogStr));
+      Entries.emplace_back(EntryKind::Remove, LogStr);
     }
     else if(LogStr.rfind("Moving", 0) == 0){
-      Entries.push_back(new MoveEntry(LogStr));
+      Entries.emplace_back(EntryKind::Move, LogStr);
     }
     else if(LogStr.rfind("Replacing", 0) == 0){
-      Entries.push_back(new ReplaceEntry(LogStr));
+      Entries.emplace_back(EntryKind::Replace, LogStr);
     }
     else{
       assert(false && "Malformed Log Entry\n");
@@ -72,16 +103,11 @@ Log::Log(const vector<string>& LogStrings, const string& Name): PassName(Name){
   }
 }
 
-Log::~Log(){
-  for(auto& Entry : Entries){
-    free(Entry);
-  }
-}
 
 string Log::toString(){
   string Res = "";
   for(auto& Entry : Entries){
-    Res += Entry->toString() + "\n";
+    Res += Entry.toString() + "\n";
   }
   return Res;
 }
