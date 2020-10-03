@@ -830,8 +830,12 @@ void Instruction::copyMetadata(const Instruction &SrcInst,
   SmallVector<std::pair<unsigned, MDNode *>, 4> TheMDs;
   SrcInst.getAllMetadataOtherThanDebugLoc(TheMDs);
   for (const auto &MD : TheMDs) {
-    if (WL.empty() || WLS.count(MD.first))
-      setMetadata(MD.first, MD.second);
+    //do not copy the id, it will be set when inserting
+    unsigned IdId = SrcInst.getContext().getMDKindID("ID");
+    if (WL.empty() || WLS.count(MD.first)){
+      if(MD.first != IdId)
+	setMetadata(MD.first, MD.second);
+    }
   }
   if (WL.empty() || WLS.count(LLVMContext::MD_dbg))
     setDebugLoc(SrcInst.getDebugLoc());
