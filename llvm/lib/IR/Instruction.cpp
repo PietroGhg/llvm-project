@@ -62,6 +62,19 @@ unsigned long Instruction::getIDInt(){
   return D.getLimitedValue();
 }
 
+void Instruction::setOperand(unsigned i, Value* Val){
+  if(hasID()){
+    if(auto* NewI = dyn_cast<Instruction>(Val)){
+      NewI->setID(getModule());
+      getModule()->addReplaceEntry(getID(), NewI->getID());
+    }
+    else{
+      getModule()->addReplaceWithValueEntry(getID(), Val);
+    }
+  }
+  User::setOperand(i, Val);
+}
+
 bool Instruction::hasID(){
   MDNode* N = getMetadata("ID");
   return N != nullptr;

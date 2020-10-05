@@ -88,6 +88,8 @@ public:
   Instruction(const Instruction &) = delete;
   Instruction &operator=(const Instruction &) = delete;
 
+  void setOperand(unsigned i, Value* Val); 
+
   /// Returns true when the instruction has an ID metadata
   bool hasID();
   /// Returns the ID metadata

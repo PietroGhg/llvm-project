@@ -56,16 +56,21 @@ inline void printModule(Module* M, InstrEntryMap_t& InstrEntry){
   }
 }
 
-inline InstrEntryMap_t getInstEntryMap(Module* M, const Log& L){
-  InstrEntryMap_t Res;
-  IDInstrMap_t IDInstr = getIDInstrMap(M);
-  InstrIDMap_t InstrID = getInstrIDmap(M);
+
+inline void updateInstEntryMap(Module* M,
+			       const Log& L,
+			       InstrEntryMap_t& Map){
+
+  IDInstrMap_t IDInstrBefore = getIDInstrMap(M);
+  InstrIDMap_t InstrIDIDBefore = getInstrIDmap(M);
 
   for(auto& Entry : L.getEntries()){
-    Instruction* I = IDInstr[Entry.getInstID1()];
-    Res[I].push_back(Entry);
+    //if the module is before the log, do not mark with the create entries
+    if(Entry.getKind() != EntryKind::Create){
+      Instruction* IBefore = IDInstrBefore[Entry.getInstID1()];
+      Map[IBefore].push_back(Entry);
+    }	
   }
-  return Res; 
 }
   
 
