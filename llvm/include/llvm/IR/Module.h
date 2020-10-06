@@ -220,7 +220,12 @@ public:
 		       const ConstantAsMetadata* New);
   void addReplaceWithValueEntry(const ConstantAsMetadata* Old,
 				const Value* New);
-  
+  void addReplaceOperandEntry(const ConstantAsMetadata* Where,
+			      const ConstantAsMetadata* Old,
+			      const ConstantAsMetadata* New);
+  void addReplaceOperandWithValueEntry(const ConstantAsMetadata* Where,
+				       const ConstantAsMetadata* Old,
+				       const Value* New);
   
     
   /// The Module constructor. Note that there is no default constructor. You

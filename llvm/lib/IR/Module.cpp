@@ -138,6 +138,26 @@ void Module::addReplaceWithValueEntry(const ConstantAsMetadata* Old,
   addEntry(O.str());
 }
 
+void Module::addReplaceOperandEntry(const ConstantAsMetadata* Where,
+			    const ConstantAsMetadata* Old,
+			    const ConstantAsMetadata* New){
+  std::string E;
+  raw_string_ostream O(E);
+  O << "Replacing operand in " << *Where << " from " << *Old << " with "
+    << *New;
+  addEntry(O.str());
+}
+
+void Module::addReplaceOperandWithValueEntry(const ConstantAsMetadata* Where,
+				     const ConstantAsMetadata* Old,
+				     const Value* New){
+  std::string E;
+  raw_string_ostream O(E);
+  O << "Replacing operand in " << *Where << " from " << *Old << " with value "
+    << *New;
+  addEntry(O.str());
+}
+
 std::unique_ptr<RandomNumberGenerator>
 Module::createRNG(const StringRef Name) const {
   SmallString<32> Salt(Name);

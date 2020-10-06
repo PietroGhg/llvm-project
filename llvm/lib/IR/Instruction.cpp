@@ -64,14 +64,23 @@ unsigned long Instruction::getIDInt(){
 
 void Instruction::setOperand(unsigned i, Value* Val){
   if(hasID()){
-    if(auto* NewI = dyn_cast<Instruction>(Val)){
-      NewI->setID(getModule());
-      getModule()->addReplaceEntry(getID(), NewI->getID());
-    }
-    else{
-      getModule()->addReplaceWithValueEntry(getID(), Val);
+    if(auto* OldI = dyn_cast<Instruction>(getOperand(i))){
+      if(OldI->hasID()){
+	if(auto* NewI = dyn_cast<Instruction>(Val)){
+	  NewI->setID(getModule());
+	  getModule()->addReplaceOperandEntry(getID(),
+					      OldI->getID(),
+					      NewI->getID());
+	}
+	else{
+	  getModule()->addReplaceOperandWithValueEntry(getID(),
+						       OldI->getID(),
+						       Val);
+	}
+      }
     }
   }
+
   User::setOperand(i, Val);
 }
 
