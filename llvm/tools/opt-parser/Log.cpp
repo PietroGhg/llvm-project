@@ -123,7 +123,7 @@ Log::Log(const vector<string>& LogStrings, const string& Name): PassName(Name){
       Entries.emplace_back(EntryKind::Move, LogStr);
     }
     else if(LogStr.rfind("Replacing", 0) == 0){
-      if(LogStr.rfind("operand", 9) == 0)
+      if(LogStr.rfind("operand", 10) == 10)
 	Entries.emplace_back(EntryKind::RepOperand, LogStr);
       else
 	Entries.emplace_back(EntryKind::Replace, LogStr);
