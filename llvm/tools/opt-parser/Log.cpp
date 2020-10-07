@@ -23,7 +23,10 @@ Entry::Entry(EntryKind Kind, const string& LogStr): Kind(Kind){
   case(EntryKind::Replace):
     makeReplaceEntry(LogStr);
     break;
-  }
+  case(EntryKind::RepOperand):
+    makeRepOperandEntry(LogStr);
+    break;
+  } 
 }
     
 
@@ -66,6 +69,27 @@ void Entry::makeReplaceEntry(const string& LogStr){
   } 
 }
 
+void Entry::makeRepOperandEntry(const string& LogStr){
+  //the LogStr either looks like:
+  //Replacing operand in i64 WHERE from i64 OLD with i64 NEW
+  //Replacing operand in i64 WHERE from i64 OLD with value i64 blabla
+  vector<string> Tokens;
+  boost::algorithm::split(Tokens, LogStr, boost::algorithm::is_any_of(" "));
+  InstID1 = stoi(Tokens[7]);
+  Where = stoi(Tokens[4]);
+  if(Tokens[9] == "i64"){
+    InstID2 = stoi(Tokens[10]);
+    ReplaceWithValue = false;
+  }
+  else if(Tokens[9] == "value"){
+    ReplaceWithValue = true;
+    Value = Tokens[11];
+  }
+  else{
+    assert(false && "Replace with operand malformed");
+  } 
+}
+
 string Entry::toString() const {
   switch(Kind){
   case(EntryKind::Create):
@@ -76,6 +100,10 @@ string Entry::toString() const {
     return "Moving " + to_string(InstID1) + " to " + to_string(InstID2);
   case(EntryKind::Replace):
     return "Replacing " + to_string(InstID1) + " " +
+      (ReplaceWithValue ? "Value " + Value : to_string(InstID2));
+  case(EntryKind::RepOperand):
+    return "Replacing operand in " + to_string(Where) + " from " +
+      to_string(InstID1) + " to " +
       (ReplaceWithValue ? "Value " + Value : to_string(InstID2));
   }
   assert(false && "Opsie\n");
@@ -95,7 +123,10 @@ Log::Log(const vector<string>& LogStrings, const string& Name): PassName(Name){
       Entries.emplace_back(EntryKind::Move, LogStr);
     }
     else if(LogStr.rfind("Replacing", 0) == 0){
-      Entries.emplace_back(EntryKind::Replace, LogStr);
+      if(LogStr.rfind("operand", 9) == 0)
+	Entries.emplace_back(EntryKind::RepOperand, LogStr);
+      else
+	Entries.emplace_back(EntryKind::Replace, LogStr);
     }
     else{
       assert(false && "Malformed Log Entry\n");
