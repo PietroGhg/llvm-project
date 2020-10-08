@@ -4,6 +4,7 @@
 #include "Log.h"
 #include "LogParser.h"
 #include "InstrIDMap.h"
+#include "RepGraph.h"
 
 using namespace std;
 
@@ -13,7 +14,20 @@ int main(int argc, char* argv[]){
   vector<unique_ptr<llvm::Module>> Modules;
   vector<Log> Logs;
   parseLog(F, Ctx, Modules, Logs);
-  int I = 0;
+  IDInstrMap_t Map;
+  for(auto& M : Modules){
+    updateIDInstrMap(Map, M.get());
+  }
+  for(auto el : Map){
+    errs() << el.first << ": ";
+    for (Instruction *elel : el.second) {
+      errs() << *elel << " ";
+    }
+    errs() << "\n";
+  }
+  getRepGraph(Logs, Map);
+    
+  /*int I = 0;
   for(auto It = Modules.begin(); It != Modules.end(); It++){
     InstrEntryMap_t IEM;
 
@@ -28,5 +42,5 @@ int main(int argc, char* argv[]){
     
     printModule(It->get(), IEM);
     I++;
-  }
+  }*/
 }

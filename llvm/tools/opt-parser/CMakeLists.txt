@@ -7,6 +7,7 @@ set(LLVM_LINK_COMPONENTS
 add_llvm_tool(opt-parser
   opt-parser.cpp
   Log.cpp
+  SourceLocation.cpp
 
   DEPENDS
   intrinsics_gen

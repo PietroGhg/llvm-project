@@ -9,7 +9,7 @@ using namespace std;
 using namespace llvm;
 
 using InstrIDMap_t = map<Instruction*, unsigned long>;
-using IDInstrMap_t = map<unsigned long, Instruction*>;
+using IDInstrMap_t = map<unsigned long, vector<Instruction*>>;
 using InstrEntryMap_t = map<Instruction*, vector<Entry>>;
 
 inline InstrIDMap_t getInstrIDmap(Module* M){
@@ -32,12 +32,24 @@ inline IDInstrMap_t getIDInstrMap(Module* M){
     for(auto& BB : F){
       for(auto& I : BB){
 	if(I.hasID()){
-	  Res[I.getIDInt()] = &I;
+	  Res[I.getIDInt()].push_back(&I);
 	}
       }
     }
   }
   return Res;
+}
+
+inline void updateIDInstrMap(IDInstrMap_t& Map, Module* M){
+    for(auto& F : *M){
+    for(auto& BB : F){
+      for(auto& I : BB){
+	if(I.hasID()){
+	  Map[I.getIDInt()].push_back(&I);
+	}
+      }
+    }
+  }
 }
 
 inline void printModule(Module* M, InstrEntryMap_t& InstrEntry){
@@ -67,8 +79,9 @@ inline void updateInstEntryMap(Module* M,
   for(auto& Entry : L.getEntries()){
     //if the module is before the log, do not mark with the create entries
     if(Entry.getKind() != EntryKind::Create){
-      Instruction* IBefore = IDInstrBefore[Entry.getInstID1()];
-      Map[IBefore].push_back(Entry);
+      auto InstrsBefore = IDInstrBefore[Entry.getInstID1()];
+      for(Instruction *IBefore : InstrsBefore)
+        Map[IBefore].push_back(Entry);
     }	
   }
 }

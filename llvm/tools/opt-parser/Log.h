@@ -41,6 +41,7 @@ public:
 	   (Kind == EntryKind::Replace && !ReplaceWithValue));
     return InstID2;
   }
+  bool isReplaceWithValue() const { return ReplaceWithValue; }
   const string& getValue() const {
     assert(ReplaceWithValue);
     return Value;
