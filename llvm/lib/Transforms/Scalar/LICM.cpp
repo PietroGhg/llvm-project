@@ -1419,6 +1419,7 @@ static Instruction *cloneInstructionInExitBlock(
   }
 
   ExitBlock.getInstList().insert(ExitBlock.getFirstInsertionPt(), New);
+  New->setID();
   if (!I.getName().empty())
     New->setName(I.getName() + ".le");
 

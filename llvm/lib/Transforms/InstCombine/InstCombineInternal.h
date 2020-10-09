@@ -370,6 +370,8 @@ public:
            "New instruction already inserted into a basic block!");
     BasicBlock *BB = Old.getParent();
     BB->getInstList().insert(Old.getIterator(), New); // Insert inst
+    if(Module* M = BB->getModule())
+      New->setID(M);
     Worklist.add(New);
     return New;
   }

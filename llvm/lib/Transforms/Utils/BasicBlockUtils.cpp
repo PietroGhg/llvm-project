@@ -898,11 +898,13 @@ void llvm::SplitLandingPadPredecessors(BasicBlock *OrigBB,
   Instruction *Clone1 = LPad->clone();
   Clone1->setName(Twine("lpad") + Suffix1);
   NewBB1->getInstList().insert(NewBB1->getFirstInsertionPt(), Clone1);
+  Clone1->setID();
 
   if (NewBB2) {
     Instruction *Clone2 = LPad->clone();
     Clone2->setName(Twine("lpad") + Suffix2);
     NewBB2->getInstList().insert(NewBB2->getFirstInsertionPt(), Clone2);
+    Clone2->setID();
 
     // Create a PHI node for the two cloned landingpad instructions only
     // if the original landingpad instruction has some uses.
@@ -944,6 +946,7 @@ ReturnInst *llvm::FoldReturnIntoUncondBranch(ReturnInst *RI, BasicBlock *BB,
       V = BCI->getOperand(0);
       NewBC = BCI->clone();
       Pred->getInstList().insert(NewRet->getIterator(), NewBC);
+      NewBC->setID();
       *i = NewBC;
     }
 
@@ -954,8 +957,10 @@ ReturnInst *llvm::FoldReturnIntoUncondBranch(ReturnInst *RI, BasicBlock *BB,
       if (NewBC) {
         NewBC->setOperand(0, NewEV);
         Pred->getInstList().insert(NewBC->getIterator(), NewEV);
+	NewEV->setID();
       } else {
         Pred->getInstList().insert(NewRet->getIterator(), NewEV);
+	NewEV->setID();
         *i = NewEV;
       }
     }

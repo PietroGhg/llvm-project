@@ -1996,6 +1996,7 @@ Instruction *InstCombinerImpl::visitGetElementPtrInst(GetElementPtrInst &GEP) {
 
     GEP.getParent()->getInstList().insert(
         GEP.getParent()->getFirstInsertionPt(), NewGEP);
+    NewGEP->setID();
     replaceOperand(GEP, 0, NewGEP);
     PtrOp = NewGEP;
   }
@@ -2418,6 +2419,7 @@ Instruction *InstCombinerImpl::visitGetElementPtrInst(GetElementPtrInst &GEP) {
             if (I != BCI) {
               I->takeName(BCI);
               BCI->getParent()->getInstList().insert(BCI->getIterator(), I);
+	      I->setID();
               replaceInstUsesWith(*BCI, I);
             }
             return &GEP;
@@ -3684,6 +3686,7 @@ bool InstCombinerImpl::run() {
         }
 
         InstParent->getInstList().insert(InsertPos, Result);
+	Result->setID();
 
         // Push the new instruction and any users onto the worklist.
         Worklist.pushUsersToWorkList(*Result);

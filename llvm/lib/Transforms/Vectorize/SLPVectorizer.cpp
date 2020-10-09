@@ -5384,6 +5384,7 @@ void BoUpSLP::scheduleBlock(BlockScheduling *BS) {
         BS->BB->getInstList().remove(pickedInst);
         BS->BB->getInstList().insert(LastScheduledInst->getIterator(),
                                      pickedInst);
+	pickedInst->setID();
       }
       LastScheduledInst = pickedInst;
       BundleMember = BundleMember->NextInBundle;

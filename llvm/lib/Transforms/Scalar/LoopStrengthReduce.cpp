@@ -2474,6 +2474,7 @@ LSRInstance::OptimizeLoopTermCond() {
         Cond = cast<ICmpInst>(Cond->clone());
         Cond->setName(L->getHeader()->getName() + ".termcond");
         ExitingBlock->getInstList().insert(TermBr->getIterator(), Cond);
+	Cond->setID();
 
         // Clone the IVUse, as the old use still exists!
         CondUse = &IU.AddUser(Cond, CondUse->getOperandValToReplace());

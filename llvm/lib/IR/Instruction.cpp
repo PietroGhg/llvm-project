@@ -39,6 +39,8 @@ Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
 
     setID();
   }
+  else
+    LLVM_DEBUG(dbgs() << "AAA CREATING\n");
 }
 
 Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
@@ -48,9 +50,12 @@ Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
   // append this instruction into the basic block
   assert(InsertAtEnd && "Basic block to append to may not be NULL!");
   InsertAtEnd->getInstList().push_back(this);
-  if(Function* F = InsertAtEnd->getParent())
+  if(Function* F = InsertAtEnd->getParent()){
     if(Module* M =F->getParent())
       setID(M);
+  }
+  else
+    LLVM_DEBUG(dbgs() << "BBB CREATING\n");
 }
 
 unsigned long Instruction::getIDInt(){

@@ -496,6 +496,7 @@ void LibCallsShrinkWrap::shrinkWrapCI(CallInst *CI, Value *Cond) {
   SuccBB->setName("cdce.end");
   CI->removeFromParent();
   CallBB->getInstList().insert(CallBB->getFirstInsertionPt(), CI);
+  CI->setID();
   LLVM_DEBUG(dbgs() << "== Basic Block After ==");
   LLVM_DEBUG(dbgs() << *CallBB->getSinglePredecessor() << *CallBB
                     << *CallBB->getSingleSuccessor() << "\n");

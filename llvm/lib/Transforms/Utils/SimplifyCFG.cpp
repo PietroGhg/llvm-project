@@ -1430,6 +1430,7 @@ HoistTerminator:
   // Okay, it is safe to hoist the terminator.
   Instruction *NT = I1->clone();
   BIParent->getInstList().insert(BI->getIterator(), NT);
+  NT->setID();
   if (!NT->getType()->isVoidTy()) {
     I1->replaceAllUsesWith(NT);
     I2->replaceAllUsesWith(NT);
@@ -2381,6 +2382,7 @@ static bool FoldCondBranchOnPHI(BranchInst *BI, const DataLayout &DL,
       if (N) {
         // Insert the new instruction into its new home.
         EdgeBB->getInstList().insert(InsertPt, N);
+	N->setID();
 
         // Register the new instruction with the assumption cache if necessary.
         if (AC && match(N, m_Intrinsic<Intrinsic::assume>()))
@@ -2892,6 +2894,7 @@ bool llvm::FoldBranchToCommonDest(BranchInst *BI, MemorySSAUpdater *MSSAU,
       NewBonusInst->dropUnknownNonDebugMetadata();
 
       PredBlock->getInstList().insert(PBI->getIterator(), NewBonusInst);
+      NewBonusInst->setID();
       NewBonusInst->takeName(&*BonusInst);
       BonusInst->setName(BonusInst->getName() + ".old");
     }
@@ -2907,6 +2910,7 @@ bool llvm::FoldBranchToCommonDest(BranchInst *BI, MemorySSAUpdater *MSSAU,
     RemapInstruction(CondInPred, VMap,
                      RF_NoModuleLevelChanges | RF_IgnoreMissingLocals);
     PredBlock->getInstList().insert(PBI->getIterator(), CondInPred);
+    CondInPred->setID();
     CondInPred->takeName(Cond);
     Cond->setName(CondInPred->getName() + ".old");
 

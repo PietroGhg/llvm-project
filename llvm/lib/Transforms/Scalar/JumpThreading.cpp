@@ -2640,6 +2640,7 @@ bool JumpThreadingPass::DuplicateCondBranchOnPHIIntoPred(
       // Otherwise, insert the new instruction into the block.
       New->setName(BI->getName());
       PredBB->getInstList().insert(OldPredBranch->getIterator(), New);
+      New->setID();
       // Update Dominance from simplified New instruction operands.
       for (unsigned i = 0, e = New->getNumOperands(); i != e; ++i)
         if (BasicBlock *SuccBB = dyn_cast<BasicBlock>(New->getOperand(i)))
@@ -2692,6 +2693,7 @@ void JumpThreadingPass::UnfoldSelectInstr(BasicBlock *Pred, BasicBlock *BB,
   // Move the unconditional branch to NewBB.
   PredTerm->removeFromParent();
   NewBB->getInstList().insert(NewBB->end(), PredTerm);
+  PredTerm->setID();
   // Create a conditional branch and update PHI nodes.
   BranchInst::Create(NewBB, BB, SI->getCondition(), Pred);
   SIUse->setIncomingValue(Idx, SI->getFalseValue());
