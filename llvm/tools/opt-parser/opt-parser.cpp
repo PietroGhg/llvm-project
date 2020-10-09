@@ -18,14 +18,12 @@ int main(int argc, char* argv[]){
   for(auto& M : Modules){
     updateIDInstrMap(Map, M.get());
   }
-  for(auto el : Map){
-    errs() << el.first << ": ";
-    for (Instruction *elel : el.second) {
-      errs() << *elel << " ";
-    }
-    errs() << "\n";
-  }
-  getRepGraph(Logs, Map);
+
+  auto G = getRepGraph(Logs, Map);
+  printRG(G);
+  propagateLocations(G);
+  errs() << "\n";
+  printRG(G);
     
   /*int I = 0;
   for(auto It = Modules.begin(); It != Modules.end(); It++){

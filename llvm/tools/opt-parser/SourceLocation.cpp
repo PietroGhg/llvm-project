@@ -12,7 +12,7 @@ SourceLocation::SourceLocation(llvm::DILocation* Loc){
   llvm::DIFile *DIFile = SubProg->getFile();
   llvm::StringRef Name = DIFile->getFilename();
   llvm::StringRef Dir = DIFile->getDirectory();
-  std::string FullName = Dir.str() + Name.str();
+  std::string FullName = Dir.str() + "/" + Name.str();
   Line = Loc->getLine();
   Column = Loc->getColumn();
   File = FullName;

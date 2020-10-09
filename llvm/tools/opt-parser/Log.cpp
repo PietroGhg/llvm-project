@@ -2,7 +2,6 @@
 #include <cassert>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <iostream>
 #define BOOST_NO_EXCEPTIONS
 #include <boost/throw_exception.hpp>
 //this is done to prevent a linking error
@@ -142,3 +141,5 @@ string Log::toString(){
   }
   return Res;
 }
+
+
