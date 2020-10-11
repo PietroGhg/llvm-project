@@ -2055,6 +2055,7 @@ JumpThreadingPass::CloneInstructions(BasicBlock::iterator BI,
     Instruction *New = BI->clone();
     New->setName(BI->getName());
     NewBB->getInstList().push_back(New);
+    New->setID();
     ValueMapping[&*BI] = New;
 
     // Remap operands to patch up intra-block references.

@@ -485,7 +485,9 @@ static bool unswitchTrivialBranch(Loop &L, BranchInst &BI, DominatorTree &DT,
     if (MSSAU) {
       // Temporarily clone the terminator, to make MSSA update cheaper by
       // separating "insert edge" updates from "remove edge" ones.
-      ParentBB->getInstList().push_back(BI.clone());
+      Instruction *NewBI = BI.clone();
+      ParentBB->getInstList().push_back(NewBI);
+      NewBI->setID();
     } else {
       // Create a new unconditional branch that will continue the loop as a new
       // terminator.
@@ -2119,6 +2121,7 @@ static void unswitchNontrivialInvariants(
     // Keep a clone of the terminator for MSSA updates.
     Instruction *NewTI = TI.clone();
     ParentBB->getInstList().push_back(NewTI);
+    NewTI->setID();
 
     // First wire up the moved terminator to the preheaders.
     if (BI) {

@@ -488,6 +488,7 @@ bool MemOPSizeOpt::perform(MemOp MO) {
     ConstantInt *CaseSizeId = ConstantInt::get(SizeType, SizeId);
     NewMO.setLength(CaseSizeId);
     CaseBB->getInstList().push_back(NewMO.I);
+    NewMO.I->setID();
     IRBuilder<> IRBCase(CaseBB);
     IRBCase.CreateBr(MergeBB);
     SI->addCase(CaseSizeId, CaseBB);

@@ -58,6 +58,7 @@ BasicBlock *llvm::CloneBasicBlock(const BasicBlock *BB, ValueToValueMapTy &VMap,
     if (I.hasName())
       NewInst->setName(I.getName() + NameSuffix);
     NewBB->getInstList().push_back(NewInst);
+    NewInst->setID();
     VMap[&I] = NewInst; // Add instruction map to value.
 
     hasCalls |= (isa<CallInst>(I) && !isa<DbgInfoIntrinsic>(I));
@@ -368,6 +369,7 @@ void PruningFunctionCloner::CloneBlock(const BasicBlock *BB,
       NewInst->setName(II->getName()+NameSuffix);
     VMap[&*II] = NewInst; // Add instruction map to value.
     NewBB->getInstList().push_back(NewInst);
+    NewInst->setID();
     hasCalls |= (isa<CallInst>(II) && !isa<DbgInfoIntrinsic>(II));
 
     if (CodeInfo)
@@ -425,6 +427,7 @@ void PruningFunctionCloner::CloneBlock(const BasicBlock *BB,
     if (OldTI->hasName())
       NewInst->setName(OldTI->getName()+NameSuffix);
     NewBB->getInstList().push_back(NewInst);
+    NewInst->setID();
     VMap[OldTI] = NewInst;             // Add instruction map to value.
 
     if (CodeInfo)

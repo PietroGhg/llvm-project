@@ -1136,6 +1136,7 @@ CallInst *CodeExtractor::emitCallAndSwitchStatement(Function *newFunction,
       GetElementPtrInst *GEP = GetElementPtrInst::Create(
           StructArgTy, Struct, Idx, "gep_" + StructValues[i]->getName());
       codeReplacer->getInstList().push_back(GEP);
+      GEP->setID();
       new StoreInst(StructValues[i], GEP, codeReplacer);
     }
   }
@@ -1152,6 +1153,7 @@ CallInst *CodeExtractor::emitCallAndSwitchStatement(Function *newFunction,
       call->setDebugLoc(DL);
   }
   codeReplacer->getInstList().push_back(call);
+  call->setID();
 
   // Set swifterror parameter attributes.
   for (unsigned SwiftErrArgNo : SwiftErrorArgs) {
@@ -1174,6 +1176,7 @@ CallInst *CodeExtractor::emitCallAndSwitchStatement(Function *newFunction,
       GetElementPtrInst *GEP = GetElementPtrInst::Create(
           StructArgTy, Struct, Idx, "gep_reload_" + outputs[i]->getName());
       codeReplacer->getInstList().push_back(GEP);
+      GEP->setID();
       Output = GEP;
     } else {
       Output = ReloadOutputs[i];
@@ -1612,6 +1615,7 @@ CodeExtractor::extractCodeRegion(const CodeExtractorAnalysisCache &CEAC) {
     });
   }
   newFuncRoot->getInstList().push_back(BranchI);
+  BranchI->setID();
 
   ValueSet inputs, outputs, SinkingCands, HoistingCands;
   BasicBlock *CommonExit = nullptr;

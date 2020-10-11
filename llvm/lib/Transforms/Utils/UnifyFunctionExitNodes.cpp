@@ -86,6 +86,7 @@ bool UnifyFunctionExitNodes::unifyReturnBlocks(Function &F) {
     PN = PHINode::Create(F.getReturnType(), ReturningBlocks.size(),
                          "UnifiedRetVal");
     NewRetBlock->getInstList().push_back(PN);
+    PN->setID();
     ReturnInst::Create(F.getContext(), PN, NewRetBlock);
   }
 
