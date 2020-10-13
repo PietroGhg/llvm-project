@@ -107,8 +107,10 @@ void Instruction::setNewID(){
 
 void Instruction::setID(){
   Module* M = getModule();
-  assert(M && "Attempting to set ID of instruction with no module.");
-  setID(M);
+  if(M)
+    setID(M);
+  else
+    LLVM_DEBUG(dbgs() << "Attempting to set ID with no module\n");
 }
 
 void Instruction::setID(Module* M){
