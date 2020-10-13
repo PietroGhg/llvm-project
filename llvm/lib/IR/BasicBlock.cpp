@@ -121,6 +121,8 @@ BasicBlock::sizeWithoutDebug() const {
 }
 
 void BasicBlock::removeFromParent() {
+  for(auto& I :getInstList())
+    I.logErase();
   getParent()->getBasicBlockList().remove(getIterator());
 }
 
@@ -131,6 +133,8 @@ iplist<BasicBlock>::iterator BasicBlock::eraseFromParent() {
 /// Unlink this basic block from its current function and
 /// insert it into the function that MovePos lives in, right before MovePos.
 void BasicBlock::moveBefore(BasicBlock *MovePos) {
+  for(auto& I : getInstList())
+    I.setNewID();
   MovePos->getParent()->getBasicBlockList().splice(
       MovePos->getIterator(), getParent()->getBasicBlockList(), getIterator());
 }
@@ -138,6 +142,8 @@ void BasicBlock::moveBefore(BasicBlock *MovePos) {
 /// Unlink this basic block from its current function and
 /// insert it into the function that MovePos lives in, right after MovePos.
 void BasicBlock::moveAfter(BasicBlock *MovePos) {
+  for(auto& I : getInstList())
+    I.setNewID();
   MovePos->getParent()->getBasicBlockList().splice(
       ++MovePos->getIterator(), getParent()->getBasicBlockList(),
       getIterator());

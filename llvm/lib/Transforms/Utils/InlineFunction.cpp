@@ -2306,6 +2306,8 @@ llvm::InlineResult llvm::InlineFunction(CallBase &CB, InlineFunctionInfo &IFI,
   // the calling basic block.
   if (Returns.size() == 1 && std::distance(FirstNewBlock, Caller->end()) == 1) {
     // Move all of the instructions right before the call.
+    for(auto& I : *FirstNewBlock)
+      I.setID(OrigBB->getModule());
     OrigBB->getInstList().splice(CB.getIterator(), FirstNewBlock->getInstList(),
                                  FirstNewBlock->begin(), FirstNewBlock->end());
     // Remove the cloned basic block.

@@ -12,6 +12,7 @@
 
 #include "llvm/IR/Instruction.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/IR/Constants.h"
@@ -102,13 +103,16 @@ void Instruction::setNewID(){
     MDNode* N = MDNode::get(M->getContext(), ID);
     setMetadata("ID", N);
   }
-  //MYTODO: else setid() ?
+  else
+    setID();
 }
 
 void Instruction::setID(){
-  Module* M = getModule();
-  if(M)
-    setID(M);
+  if(BasicBlock* BB = getParent()){
+    if(Function* F = BB->getParent())
+      if(Module* M = F->getParent())
+	setID(M);
+  }
   else
     LLVM_DEBUG(dbgs() << "Attempting to set ID with no module\n");
 }

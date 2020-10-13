@@ -504,6 +504,9 @@ void llvm::CloneAndPruneIntoFromInst(Function *NewFunc, const Function *OldFunc,
 
     // Add the new block to the new function.
     NewFunc->getBasicBlockList().push_back(NewBB);
+    for(auto& I : *NewBB){
+      I.setID();
+    }
 
     // Handle PHI nodes specially, as we have to remove references to dead
     // blocks.
@@ -706,6 +709,8 @@ void llvm::CloneAndPruneIntoFromInst(Function *NewFunc, const Function *OldFunc,
 
     // Move all the instructions in the succ to the pred.
     I->getInstList().splice(I->end(), Dest->getInstList());
+    for(auto& I : Dest->getInstList())
+      I.setNewID();
 
     // Remove the dest block.
     Dest->eraseFromParent();
@@ -835,6 +840,7 @@ Loop *llvm::cloneLoopWithPreheader(BasicBlock *Before, BasicBlock *LoopDomBB,
   // Move them physically from the end of the block list.
   F->getBasicBlockList().splice(Before->getIterator(), F->getBasicBlockList(),
                                 NewPH);
+    
   F->getBasicBlockList().splice(Before->getIterator(), F->getBasicBlockList(),
                                 NewLoop->getHeader()->getIterator(), F->end());
 
