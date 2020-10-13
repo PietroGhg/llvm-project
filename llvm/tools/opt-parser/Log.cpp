@@ -133,6 +133,15 @@ Log::Log(const vector<string>& LogStrings, const string& Name): PassName(Name){
   }
 }
 
+vector<Entry> Log::getEntries(const EntryKind Kind) const {
+  vector<Entry> Res;
+  for(auto Entry : getEntries()){
+    if(Entry.getKind() == Kind)
+      Res.push_back(Entry);
+  }
+  
+  return Res;
+}
 
 string Log::toString(){
   string Res = "";

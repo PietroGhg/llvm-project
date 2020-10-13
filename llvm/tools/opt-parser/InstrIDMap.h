@@ -53,15 +53,30 @@ inline void updateIDInstrMap(IDInstrMap_t& Map, Module* M){
 }
 
 inline void printModule(Module* M, InstrEntryMap_t& InstrEntry){
+  const string Green = "\033[32m";
+  const string Red = "\033[31m";
+  const string Reset = "\033[0m";
+  string Color;
+  
   auto Map = getInstrIDmap(M);
   for(auto& F : *M){
     errs() << F.getName() << "\n";
     for(auto& BB : F){
-      errs() << BB.getName().str() << "\n";
+      errs() << BB.getName() << "\n";
       for(auto& I : BB){
-	errs() << I << " " << Map[&I] << " ";
-	for(auto& Entry : InstrEntry[&I])
-	  errs() << Entry.toString() << " ";
+	Color = Reset;
+	for(auto& Entry : InstrEntry[&I]){
+	  if(Entry.getKind() == EntryKind::Create)
+	    Color = Green;
+	  else if(Entry.getKind() == EntryKind::Remove)
+	    Color = Red;
+	}
+	errs() << "\t" << Color << I << Reset << " " << Map[&I] << " ";
+	for(auto& Entry : InstrEntry[&I]){
+	  if(Entry.getKind() != EntryKind::Create &&
+	     Entry.getKind() != EntryKind::Remove)
+	    errs() << Entry.toString() << " ";
+	}
 	errs() << "\n";
       }
     }
@@ -77,12 +92,9 @@ inline void updateInstEntryMap(Module* M,
   InstrIDMap_t InstrIDIDBefore = getInstrIDmap(M);
 
   for(auto& Entry : L.getEntries()){
-    //if the module is before the log, do not mark with the create entries
-    if(Entry.getKind() != EntryKind::Create){
       auto InstrsBefore = IDInstrBefore[Entry.getInstID1()];
       for(Instruction *IBefore : InstrsBefore)
-        Map[IBefore].push_back(Entry);
-    }	
+        Map[IBefore].push_back(Entry);	
   }
 }
   

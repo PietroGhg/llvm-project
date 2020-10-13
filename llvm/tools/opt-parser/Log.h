@@ -57,6 +57,7 @@ class Log{
  public:
   Log(const vector<string>& LogStrings, const string& Name = "unknown");
   const vector<Entry>& getEntries() const { return Entries; }
+  vector<Entry> getEntries(const EntryKind Kind) const;
   const string& getPassName() { return PassName; }
   string toString();
 };
