@@ -208,6 +208,8 @@ static bool SimplifyFunction(Function *F, CallGraphUpdater &CGU) {
           BasicBlock *New = BB->splitBasicBlock(I);
 
           // Remove the uncond branch and add an unreachable.
+	  if(BB->getTerminator())
+	    BB->getTerminator()->logErase();
           BB->getInstList().pop_back();
           new UnreachableInst(BB->getContext(), &*BB);
 

@@ -91,8 +91,7 @@ void Instruction::setOperand(unsigned i, Value* Val){
 }
 
 bool Instruction::hasID(){
-  MDNode* N = getMetadata("ID");
-  return N != nullptr;
+  return getMetadata("ID");
 }
 
 void Instruction::setNewID(){
@@ -178,7 +177,6 @@ void Instruction::removeFromParent() {
 
 iplist<Instruction>::iterator Instruction::eraseFromParent() {
   logErase();
-  
   return getParent()->getInstList().erase(getIterator());
 }
 

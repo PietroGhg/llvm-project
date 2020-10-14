@@ -55,6 +55,8 @@ bool UnifyFunctionExitNodes::unifyUnreachableBlocks(Function &F) {
   new UnreachableInst(F.getContext(), UnreachableBlock);
 
   for (BasicBlock *BB : UnreachableBlocks) {
+    if(BB->getTerminator())
+      BB->getTerminator()->logErase();
     BB->getInstList().pop_back(); // Remove the unreachable inst.
     BranchInst::Create(UnreachableBlock, BB);
   }
@@ -98,6 +100,8 @@ bool UnifyFunctionExitNodes::unifyReturnBlocks(Function &F) {
     if (PN)
       PN->addIncoming(BB->getTerminator()->getOperand(0), BB);
 
+    if(BB->getTerminator())
+      BB->getTerminator()->logErase();
     BB->getInstList().pop_back();  // Remove the return insn
     BranchInst::Create(NewRetBlock, BB);
   }

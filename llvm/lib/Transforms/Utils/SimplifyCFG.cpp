@@ -2224,6 +2224,9 @@ bool SimplifyCFGOpt::SpeculativelyExecuteBB(BranchInst *BI, BasicBlock *ThenBB,
   }
 
   // Hoist the instructions.
+  for(auto It = ThenBB->begin(); It != std::prev(ThenBB->end()); It++)
+    It->setNewID();
+    
   BB->getInstList().splice(BI->getIterator(), ThenBB->getInstList(),
                            ThenBB->begin(), std::prev(ThenBB->end()));
 

@@ -1123,8 +1123,10 @@ bool llvm::TryToSimplifyUncondBranchFromEmptyBlock(BasicBlock *BB,
   if (!Succ->hasName()) Succ->takeName(BB);
 
   // Clear the successor list of BB to match updates applying to DTU later.
-  if (BB->getTerminator())
+  if (BB->getTerminator()){
+    BB->getTerminator()->logErase();
     BB->getInstList().pop_back();
+  }
   new UnreachableInst(BB->getContext(), BB);
   assert(succ_empty(BB) && "The successor list of BB isn't empty before "
                            "applying corresponding DTU updates.");
@@ -2133,6 +2135,7 @@ BasicBlock *llvm::changeToInvokeAndSplitBasicBlock(CallInst *CI,
       BB->splitBasicBlock(CI->getIterator(), CI->getName() + ".noexc");
 
   // Delete the unconditional branch inserted by splitBasicBlock
+  BB->getTerminator()->logErase();
   BB->getInstList().pop_back();
 
   // Create the new invoke instruction.
@@ -2157,6 +2160,8 @@ BasicBlock *llvm::changeToInvokeAndSplitBasicBlock(CallInst *CI,
   CI->replaceAllUsesWith(II);
 
   // Delete the original call
+  if(!Split->getInstList().empty())
+    Split->getInstList().begin()->logErase();
   Split->getInstList().pop_front();
   return Split;
 }

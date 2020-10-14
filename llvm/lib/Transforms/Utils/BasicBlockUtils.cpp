@@ -75,6 +75,8 @@ void llvm::DetatchDeadBlocks(
       // eventually be removed (they are themselves dead).
       if (!I.use_empty())
         I.replaceAllUsesWith(UndefValue::get(I.getType()));
+      if(BB->getTerminator())
+	BB->getTerminator()->logErase();
       BB->getInstList().pop_back();
     }
     new UnreachableInst(BB->getContext(), BB);
@@ -265,12 +267,16 @@ bool llvm::MergeBlockIntoPredecessor(BasicBlock *BB, DomTreeUpdater *DTU,
 
   if (PredecessorWithTwoSuccessors) {
     // Delete the unconditional branch from BB.
+    if(BB->getTerminator())
+      BB->getTerminator()->logErase();
     BB->getInstList().pop_back();
 
     // Update branch in the predecessor.
     PredBB_BI->setSuccessor(FallThruPath, NewSucc);
   } else {
     // Delete the unconditional branch from the predecessor.
+    if(BB->getTerminator())
+      BB->getTerminator()->logErase();
     PredBB->getInstList().pop_back();
 
     // Move terminator instruction.
