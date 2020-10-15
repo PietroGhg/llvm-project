@@ -12,7 +12,7 @@
 
 using namespace boost;
 using namespace llvm;
-//!Struct for the vertex data, a delay for each vertex
+
 struct RepVertex {
   unsigned long InstID;
   std::set<SourceLocation> Locations;

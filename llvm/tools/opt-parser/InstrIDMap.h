@@ -62,7 +62,7 @@ inline void printModule(Module* M, InstrEntryMap_t& InstrEntry){
   for(auto& F : *M){
     errs() << F.getName() << "\n";
     for(auto& BB : F){
-      errs() << BB.getName() << "\n";
+      errs() << "\t" << BB.getName() << "\n";
       for(auto& I : BB){
 	Color = Reset;
 	for(auto& Entry : InstrEntry[&I]){
@@ -71,7 +71,7 @@ inline void printModule(Module* M, InstrEntryMap_t& InstrEntry){
 	  else if(Entry.getKind() == EntryKind::Remove)
 	    Color = Red;
 	}
-	errs() << "\t" << Color << I << Reset << " " << Map[&I] << " ";
+	errs() << "\t\t" << Color << I << Reset << " " << Map[&I] << " ";
 	for(auto& Entry : InstrEntry[&I]){
 	  if(Entry.getKind() != EntryKind::Create &&
 	     Entry.getKind() != EntryKind::Remove)
