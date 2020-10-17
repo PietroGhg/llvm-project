@@ -2,6 +2,7 @@
 #include <cassert>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <string>
 #define BOOST_NO_EXCEPTIONS
 #include <boost/throw_exception.hpp>
 //this is done to prevent a linking error
@@ -34,7 +35,7 @@ void Entry::makeOneInstrEntry(const string& LogStr){
   //the LogStr looks like TYPE i64 ID, so the ID will be at Tokens[2].
   vector<string> Tokens;
   boost::algorithm::split(Tokens, LogStr, boost::algorithm::is_any_of(" "));
-  InstID1 = stoi(Tokens[2]);
+  InstID1 = stoul(Tokens[2]);
 }
 
 void Entry::makeMoveEntry(const string& LogStr){
@@ -42,8 +43,8 @@ void Entry::makeMoveEntry(const string& LogStr){
   //IDOld is at Tokens[2], IDNew at Tokens[5]
   vector<string> Tokens;
   boost::algorithm::split(Tokens, LogStr, boost::algorithm::is_any_of(" "));
-  InstID1 = stoi(Tokens[2]);
-  InstID2 = stoi(Tokens[5]);
+  InstID1 = stoul(Tokens[2]);
+  InstID2 = stoul(Tokens[5]);
 }
 
 void Entry::makeReplaceEntry(const string& LogStr){
@@ -54,9 +55,9 @@ void Entry::makeReplaceEntry(const string& LogStr){
   //then disambiguate the value and set either the oldID or the value
   vector<string> Tokens;
   boost::algorithm::split(Tokens, LogStr, boost::algorithm::is_any_of(" "));
-  InstID1 = stoi(Tokens[2]);
+  InstID1 = stoul(Tokens[2]);
   if(Tokens[4] == "i64"){
-    InstID2 = stoi(Tokens[5]);
+    InstID2 = stoul(Tokens[5]);
     ReplaceWithValue = false;
   }
   else if(Tokens[4] == "value"){
@@ -74,10 +75,10 @@ void Entry::makeRepOperandEntry(const string& LogStr){
   //Replacing operand in i64 WHERE from i64 OLD with value i64 blabla
   vector<string> Tokens;
   boost::algorithm::split(Tokens, LogStr, boost::algorithm::is_any_of(" "));
-  InstID1 = stoi(Tokens[7]);
-  Where = stoi(Tokens[4]);
+  InstID1 = stoul(Tokens[7]);
+  Where = stoul(Tokens[4]);
   if(Tokens[9] == "i64"){
-    InstID2 = stoi(Tokens[10]);
+    InstID2 = stoul(Tokens[10]);
     ReplaceWithValue = false;
   }
   else if(Tokens[9] == "value"){

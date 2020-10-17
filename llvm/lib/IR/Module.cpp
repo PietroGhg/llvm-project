@@ -89,9 +89,23 @@ Module::~Module() {
 }
 
 ConstantAsMetadata* Module::getNewID(){
-  Type* T = Type::getInt64Ty(Context);
-  Constant* C = ConstantInt::get(T, NextID);
-  NextID++;
+  //Type* T = Type::getInt64Ty(Context);
+  //Constant* C = ConstantInt::get(T, NextID);
+  //NextID++;
+  //Increase ID by one
+  auto NMD = getOrInsertNamedMetadata("ID");
+  auto N = NMD->getOperand(0);
+  auto& O = N->getOperand(0);
+  auto ID = cast<ConstantAsMetadata>(O);
+  Constant* B = ID->getValue();
+  ConstantInt* C = dyn_cast<ConstantInt>(B);
+  APInt D = C->getValue();
+  auto AAA = D.getLimitedValue();
+  AAA++;
+  Type* T = Type::getInt64Ty(getContext());
+  Constant* K = ConstantInt::get(T, AAA);
+  MDNode* New = MDNode::get(getContext(), ConstantAsMetadata::get(K));
+  NMD->setOperand(0, New);
   return ConstantAsMetadata::get(C);
 }
 

@@ -179,7 +179,7 @@ public:
 /// @name Member Variables
 /// @{
 private:
-  unsigned long NextID;
+  unsigned long NextID; //MYTODO: remove this, it's now metadata
   std::vector<std::string> Log; //MYTODO: make this metadata
   LLVMContext &Context;           ///< The LLVMContext from which types and
                                   ///< constants are allocated.

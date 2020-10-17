@@ -30,6 +30,12 @@ namespace {
 
 
     bool runOnModule(llvm::Module& M) override{
+      //Adds the ID to the node as metadata
+      Type* T = Type::getInt64Ty(M.getContext());
+      Constant* C = ConstantInt::get(T, 0);
+      MDNode* N = MDNode::get(M.getContext(), ConstantAsMetadata::get(C));
+      NamedMDNode* NMD = M.getOrInsertNamedMetadata("ID");
+      NMD->addOperand(N);
       for(auto& F : M){
 	for(auto& BB : F){
 	  for(auto& I : BB){

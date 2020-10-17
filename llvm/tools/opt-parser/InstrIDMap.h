@@ -41,7 +41,7 @@ inline IDInstrMap_t getIDInstrMap(Module* M){
 }
 
 inline void updateIDInstrMap(IDInstrMap_t& Map, Module* M){
-    for(auto& F : *M){
+  for(auto& F : *M){
     for(auto& BB : F){
       for(auto& I : BB){
 	if(I.hasID()){
