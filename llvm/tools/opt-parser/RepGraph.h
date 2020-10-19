@@ -47,7 +47,7 @@ inline void printRG(const RepGraph& G){
 
 //MYTODO: deal with instructions that are created and removed in the same pass
 inline RepGraph getRepGraph(const std::vector<Log> Logs, IDInstrMap_t& Map){
-  RepGraph G(Map.rbegin()->first);
+  RepGraph G(Map.rbegin()->first + 1);
   
   //set id i to node i
   for(auto V : make_iterator_range(vertices(G)))

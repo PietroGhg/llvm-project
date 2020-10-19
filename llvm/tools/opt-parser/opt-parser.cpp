@@ -25,7 +25,7 @@ int main(int argc, char* argv[]){
   errs() << "\n";
   printRG(G);
     
-  int I = 0;
+  /*int I = 0;
   for(auto It = Modules.begin(); It != Modules.end(); It++){
     InstrEntryMap_t IEM;
 
@@ -43,6 +43,26 @@ int main(int argc, char* argv[]){
     printModule(It->get(), IEM);
     errs() << "\n\n";
     I++;
+  }*/
+  unsigned long I = 0;
+  for(auto& Log : Logs){
+    if(Log.getEntries().empty())
+      continue;
+    if(I < Modules.size()){
+      printTransform(Log,
+		     Modules[I].get(),
+		     Modules[I+1].get(),
+		     to_string(I));
+    }
+    else{
+            printTransform(Log,
+			   Modules[I].get(),
+			   nullptr,
+			   to_string(I));
+    }
+    errs() <<"\n\n";
+    I++;
   }
+    
 
 }

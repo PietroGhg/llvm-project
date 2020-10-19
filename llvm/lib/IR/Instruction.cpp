@@ -40,8 +40,6 @@ Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
 
     setID();
   }
-  else
-    LLVM_DEBUG(dbgs() << "AAA CREATING\n");
 }
 
 Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
@@ -55,8 +53,6 @@ Instruction::Instruction(Type *ty, unsigned it, Use *Ops, unsigned NumOps,
     if(Module* M =F->getParent())
       setID(M);
   }
-  else
-    LLVM_DEBUG(dbgs() << "BBB CREATING\n");
 }
 
 unsigned long Instruction::getIDInt(){

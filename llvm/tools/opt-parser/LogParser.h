@@ -62,7 +62,7 @@ inline void parseLog(std::fstream& F,
       Modules.push_back(generateModule(ModuleString, Ctx)); 
       ModuleString = ""; //reset module string
       InModule = false; //no more in module
-      ModuleHeader = true;
+      ModuleHeader = false;
       Logs.push_back(OptLog()); //push back a new vector of strings for the log
       Logs[CurrentLog].push_back(Line); //push back the current line in the log
     }
