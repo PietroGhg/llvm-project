@@ -8,6 +8,7 @@ add_llvm_tool(opt-parser
   opt-parser.cpp
   Log.cpp
   SourceLocation.cpp
+  HTMLprint.cpp
 
   DEPENDS
   intrinsics_gen

@@ -5,6 +5,7 @@
 #include "LogParser.h"
 #include "InstrIDMap.h"
 #include "RepGraph.h"
+#include "HTMLprint.h"
 
 using namespace std;
 
@@ -44,25 +45,7 @@ int main(int argc, char* argv[]){
     errs() << "\n\n";
     I++;
   }*/
-  unsigned long I = 0;
-  for(auto& Log : Logs){
-    if(Log.getEntries().empty())
-      continue;
-    if(I < Modules.size()){
-      printTransform(Log,
-		     Modules[I].get(),
-		     Modules[I+1].get(),
-		     to_string(I));
-    }
-    else{
-            printTransform(Log,
-			   Modules[I].get(),
-			   nullptr,
-			   to_string(I));
-    }
-    errs() <<"\n\n";
-    I++;
-  }
+  printLogs(Logs, Modules, argv[2]);
     
 
 }
