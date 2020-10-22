@@ -109,11 +109,23 @@ string Entry::toString() const {
   assert(false && "Opsie\n");
 }
 
-  
+
+void Log::setPassName(const string& LogStr){
+  vector<string> Tokens;
+  string Name;
+  boost::algorithm::split(Tokens, LogStr, boost::algorithm::is_any_of(" "));
+  for(auto It = Tokens.begin()+1; It != Tokens.end(); It++){
+    Name += " " + *It;
+  }
+  PassName = Name;
+}
 
 Log::Log(const vector<string>& LogStrings, const string& Name): PassName(Name){
   for(auto LogStr : LogStrings){
-    if(LogStr.rfind("Creating", 0) == 0){
+    if(LogStr.rfind("Running", 0) == 0){
+      setPassName(LogStr);
+    }
+    else if(LogStr.rfind("Creating", 0) == 0){
       Entries.emplace_back(EntryKind::Create, LogStr);
     }
     else if(LogStr.rfind("Removing", 0) == 0){
@@ -146,6 +158,7 @@ vector<Entry> Log::getEntries(const EntryKind Kind) const {
 
 string Log::toString(){
   string Res = "";
+  Res += "PassName: " + PassName + "\n";
   for(auto& Entry : Entries){
     Res += Entry.toString() + "\n";
   }

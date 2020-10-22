@@ -54,10 +54,11 @@ class Log{
  private:
   string PassName;
   vector<Entry> Entries;
+  void setPassName(const string& LogStr);
  public:
   Log(const vector<string>& LogStrings, const string& Name = "unknown");
   const vector<Entry>& getEntries() const { return Entries; }
   vector<Entry> getEntries(const EntryKind Kind) const;
-  const string& getPassName() { return PassName; }
+  const string& getPassName() const { return PassName; }
   string toString();
 };

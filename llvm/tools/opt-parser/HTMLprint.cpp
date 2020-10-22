@@ -196,6 +196,17 @@ string htmlAfter(const Log& Log,
   return Out.str();  
 }
 
+string encode(const string& Original){
+  string Res = "";
+  for(auto C : Original){
+    if(C == ' ')
+      Res += "%20";
+    else
+      Res += C;
+  }
+  return Res;
+}
+
 void printTransform(const Log& Log,
 		    Module* Before,
 		    Module* After,
@@ -234,7 +245,7 @@ void printTransform(const Log& Log,
   ofstream FA(PathAfter);
   ofstream F(OutputDir + "/" + Filename + ".html");
   F << Part1 << NavBar << Part2 <<
-    FilenameBefore << Part3 << FilenameAfter << Part4;
+    encode(FilenameBefore) << Part3 << encode(FilenameAfter) << Part4;
   FB << HTMLpre;
   FA << HTMLafter;
   F.close();
@@ -279,6 +290,7 @@ void printModuleHTML(Module* M, InstrEntryMap_t& InstrEntry){
   errs() << Out.str();
 }
 
+      
 string generateNavBar(const vector<string>& Links){
   string Result;
   string HRefs = "";
@@ -298,7 +310,7 @@ string generateNavBar(const vector<string>& Links){
 )V0G0N";
 
   for(auto& El : Links)
-    HRefs += "<a href=\"" + El + ".html\">" + El + "</a>\n";
+    HRefs += "<a href=\"" + encode(El) + ".html\">" + El + "</a>\n";
 
   return Part1 + HRefs + Part2;  
 }
@@ -339,7 +351,7 @@ void printLogs(const vector<Log>& Logs,
   for(auto& Log : Logs){
     if(Log.getEntries().empty())
       continue;
-    string Filename = to_string(I);
+    string Filename = to_string(I) + " " + Log.getPassName();
     Links.push_back(Filename);
     I++;
   }
@@ -352,7 +364,7 @@ void printLogs(const vector<Log>& Logs,
     if(Log.getEntries().empty())
       continue;
     
-    string Filename = to_string(I);
+    string Filename = to_string(I)+ " " + Log.getPassName();
     printTransform(Log,
 		   Modules[I].get(),
 		   Modules[I+1].get(),
