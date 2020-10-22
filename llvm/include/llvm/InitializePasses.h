@@ -443,6 +443,7 @@ void initializeWriteBitcodePassPass(PassRegistry&);
 void initializeWriteThinLTOBitcodePass(PassRegistry&);
 void initializeXRayInstrumentationPass(PassRegistry&);
   void initializeAddUniqueIDPass(PassRegistry&);
+  void initializePrintPassNameWrapperPass(PassRegistry&);
 
 } // end namespace llvm
 

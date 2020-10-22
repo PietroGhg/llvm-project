@@ -54,6 +54,7 @@
 #include "llvm/Transforms/IPO/AlwaysInliner.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Transforms/IPO/WholeProgramDevirt.h"
+#include "llvm/Transforms/Utils.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Utils/Debugify.h"
 #include <algorithm>
@@ -96,6 +97,9 @@ Force("f", cl::desc("Enable binary output on terminals"));
 
 static cl::opt<bool>
 PrintEachXForm("p", cl::desc("Print module after each transformation"));
+
+static cl::opt<bool>
+PrintEachXAndName("pn", cl::desc("Print module after each transformation, and name of the transformation"));				 
 
 static cl::opt<bool>
 NoOutput("disable-output",
@@ -848,6 +852,12 @@ int main(int argc, char **argv) {
     Passes.add(TPC);
   }
 
+  // -pn = -p -debug-type="mylog"
+  if(PrintEachXAndName){
+    llvm::DebugFlag = true;
+    llvm::setCurrentDebugType("mylog");
+  }
+
   // Create a new optimization pass for each one specified on the command line
   for (unsigned i = 0; i < PassList.size(); ++i) {
     if (StandardLinkOpts &&
@@ -887,6 +897,10 @@ int main(int argc, char **argv) {
     }
 
     const PassInfo *PassInf = PassList[i];
+    
+    if(PrintEachXAndName)
+      Passes.add(createPrintPassNamePass(PassInf->getPassName()));
+    
     Pass *P = nullptr;
     if (PassInf->getNormalCtor())
       P = PassInf->getNormalCtor()();
@@ -918,7 +932,7 @@ int main(int argc, char **argv) {
       }
     }
 
-    if (PrintEachXForm)
+    if (PrintEachXForm || PrintEachXAndName)
       Passes.add(
           createPrintModulePass(errs(), "", PreserveAssemblyUseListOrder));
   }

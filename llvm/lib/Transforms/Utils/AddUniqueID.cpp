@@ -53,10 +53,6 @@ char AddUniqueID::ID = 0;
 
 INITIALIZE_PASS(AddUniqueID, "addUnique", "Add Unique ID ",
                       false, false)
-/*INITIALIZE_PASS_BEGIN(AddUniqueID, "addUnique", "Add Unique ID ",
-                      false, false)
-INITIALIZE_PASS_END(AddUniqueID, "addUnique", "Add Unique ID ",
-                    false, false)*/
 
 
 ModulePass *llvm::createAddUniqueIDPass() {
@@ -65,6 +61,12 @@ ModulePass *llvm::createAddUniqueIDPass() {
 
 PreservedAnalyses AddUniqueIDPass::run(llvm::Module &M,
                                         FunctionAnalysisManager &AM) {
+  //Adds the ID to the node as metadata
+  Type* T = Type::getInt64Ty(M.getContext());
+  Constant* C = ConstantInt::get(T, 0);
+  MDNode* N = MDNode::get(M.getContext(), ConstantAsMetadata::get(C));
+  NamedMDNode* NMD = M.getOrInsertNamedMetadata("ID");
+  NMD->addOperand(N);
   for(auto& F : M){
     for(auto& BB : F){
       for(auto& I : BB){

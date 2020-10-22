@@ -15,6 +15,8 @@
 #define LLVM_TRANSFORMS_UTILS_H
 
 #include "llvm/Pass.h"
+#include "llvm/Support/Debug.h"
+#include "llvm/Support/raw_ostream.h"
 namespace llvm {
 
 class ModulePass;
@@ -162,7 +164,11 @@ FunctionPass *createAssumeSimplifyPass();
 // don't block SCEV.
 //
 Pass *createCanonicalizeFreezeInLoopsPass();
+
   ModulePass *createAddUniqueIDPass();
+
+  ModulePass *createPrintPassNamePass(StringRef Name,
+				      raw_ostream& OS = dbgs());
 
 } // namespace llvm
 

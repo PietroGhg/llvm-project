@@ -1,5 +1,6 @@
 add_llvm_component_library(LLVMTransformUtils
   AddUniqueID.cpp
+  PrintPassName.cpp
   AddDiscriminators.cpp
   AMDGPUEmitPrintf.cpp
   ASanStackFrameLayout.cpp
