@@ -19,10 +19,6 @@ int main(int argc, char* argv[]){
   for(auto& M : Modules){
     updateIDInstrMap(Map, M.get());
   }
-  for(auto& el : Modules)
-    errs() << *el.get() << "\n";
-  for(auto& el : Logs)
-    errs() << el.toString() << "\n";
   //auto G = getRepGraph(Logs, Map);
   //printRG(G);
   //propagateLocations(G);

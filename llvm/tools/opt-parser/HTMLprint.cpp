@@ -1,4 +1,5 @@
 #include "HTMLprint.h"
+#include <algorithm>
 #include <vector>
 
 
@@ -196,6 +197,12 @@ string htmlAfter(const Log& Log,
   return Out.str();  
 }
 
+void removeChar(string& Original, char C){
+  Original.erase(std::remove(Original.begin(), Original.end(), C),
+		 Original.end());
+}
+  
+
 string encode(const string& Original){
   string Res = "";
   for(auto C : Original){
@@ -352,6 +359,7 @@ void printLogs(const vector<Log>& Logs,
     if(Log.getEntries().empty())
       continue;
     string Filename = to_string(I) + " " + Log.getPassName();
+    removeChar(Filename, '/');
     Links.push_back(Filename);
     I++;
   }
@@ -365,6 +373,7 @@ void printLogs(const vector<Log>& Logs,
       continue;
     
     string Filename = to_string(I)+ " " + Log.getPassName();
+    removeChar(Filename, '/');
     printTransform(Log,
 		   Modules[I].get(),
 		   Modules[I+1].get(),
