@@ -15,6 +15,7 @@
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SetVector.h"
 #include "llvm/ADT/SmallString.h"
+#include "llvm/IR/Argument.h"
 #include "llvm/IR/Constant.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
@@ -488,6 +489,12 @@ void Value::doRAUW(Value *New, ReplaceMetadataUses ReplaceMetaUses) {
       else{
 	OldI->getModule()->addReplaceWithValueEntry(OldI->getID(), New);
       }
+    }
+  }
+  else if (Argument* Arg = dyn_cast<Argument>(this)){
+    if(Instruction* NewI = dyn_cast<Instruction>(New)){
+      NewI->setID(Arg->getParent()->getParent());
+      errs() << "Replacing Argument " << *Arg << " with " << *NewI->getID() << "\n";
     }
   }
 
