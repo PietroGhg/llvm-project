@@ -1,4 +1,5 @@
 #include "HTMLprint.h"
+#include "Log.h"
 #include <algorithm>
 #include <vector>
 
@@ -110,65 +111,18 @@ void printModule(Module* M, InstrEntryMap_t& InstrEntry){
   }
 }
 
-/// Returns the HTML print of a module before the logged transformation in applied
+/// Returns the HTML print of a module
 /// Mark in red removed instructions
-string htmlBefore(const Log& Log,
-		  Module* M){
+/// Mark in green inserted instructions
+string html(const Log& Log,
+	    Module* M,
+	    const bool IsBefore){
   const string Red = "<span style=\"color:red;margin-bottom:30px\">";
-  const string P = "<span>";
-  const string Reset = "</span>";
-  string Color;
-  string S;
-  raw_string_ostream Out(S);
-
-  InstrEntryMap_t InstrEntry;
-  updateInstEntryMap(M, Log, InstrEntry);
-  Out << "<html><head></head><body><pre>";
-
-  auto Map = getInstrIDmap(M);
-  if(M){
-    for(auto& F : *M){
-      Out << *F.getReturnType() << " ";
-      Out << F.getName() << "(";
-      for(unsigned int I = 0; I < F.getFunctionType()->getNumParams(); I++){
-	if(I)
-	  Out << ", ";
-	Out << *F.getArg(I);
-      }
-      Out << ")";
-      Out << "<br>\n";
-      for(auto& BB : F){
-	Out << "&#9;" << BB.getName() << "<br>\n";
-	for(auto& I : BB){
-	  Color = P;
-	  for(auto& Entry : InstrEntry[&I]){
-	    if(Entry.getKind() == EntryKind::Remove)
-	      Color = Red;
-	  }
-	  Out  << Color << "&#9; &#9;" << I << " " << Map[&I] << " ";
-	  for(auto& Entry : InstrEntry[&I]){
-	    if(Entry.getKind() != EntryKind::Create &&
-	       Entry.getKind() != EntryKind::Remove)
-	      Out << Entry.toString() << " ";
-	  }
-	  Out << Reset << "\n";
-	}
-      }
-    }
-  }
-
-   
-  Out << "</pre></body></html>";
-  return Out.str();  
-}
-
-/// Returns the HTML print of a module before the logged transformation in applied
-/// Mark in red removed instructions
-string htmlAfter(const Log& Log,
-			 Module* M){
   const string Green = "<span style=\"color:green;margin-bottom:30px\">";
   const string P = "<span>";
   const string Reset = "</span>";
+  const string InstrColor = IsBefore ? Red : Green;
+  const EntryKind RorC = IsBefore ? EntryKind::Remove : EntryKind::Create;
   string Color;
   string S;
   raw_string_ostream Out(S);
@@ -176,6 +130,8 @@ string htmlAfter(const Log& Log,
   InstrEntryMap_t InstrEntry;
   updateInstEntryMap(M, Log, InstrEntry);
   Out << "<html><head></head><body><pre>";
+
+  
   if(M){
     auto Map = getInstrIDmap(M);
     for(auto& F : *M){
@@ -193,8 +149,8 @@ string htmlAfter(const Log& Log,
 	for(auto& I : BB){
 	  Color = P;
 	  for(auto& Entry : InstrEntry[&I]){
-	    if(Entry.getKind() == EntryKind::Create)
-	      Color = Green;
+	    if(Entry.getKind() == RorC)
+	      Color = InstrColor;
 	  }
 	  Out  << Color << "&#9; &#9;" << I << " " << Map[&I] << " ";
 	  for(auto& Entry : InstrEntry[&I]){
@@ -212,6 +168,8 @@ string htmlAfter(const Log& Log,
   Out << "</pre></body></html>";
   return Out.str();  
 }
+
+
 
 void removeChar(string& Original, char C){
   Original.erase(std::remove(Original.begin(), Original.end(), C),
@@ -236,8 +194,8 @@ void printTransform(const Log& Log,
 		    const string& NavBar,
 		    const string& OutputDir,
 		    const string& Filename){
-  string HTMLpre = htmlBefore(Log, Before);
-  string HTMLafter = htmlAfter(Log, After);
+  string HTMLpre = html(Log, Before, true);
+  string HTMLafter = html(Log, After, false);
 
 
   const char* Part1 = R"V0G0N(<html>
