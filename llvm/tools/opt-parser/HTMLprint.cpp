@@ -113,7 +113,7 @@ void printModule(Module* M, InstrEntryMap_t& InstrEntry){
 /// Returns the HTML print of a module before the logged transformation in applied
 /// Mark in red removed instructions
 string htmlBefore(const Log& Log,
-			 Module* M){
+		  Module* M){
   const string Red = "<span style=\"color:red;margin-bottom:30px\">";
   const string P = "<span>";
   const string Reset = "</span>";
@@ -128,7 +128,15 @@ string htmlBefore(const Log& Log,
   auto Map = getInstrIDmap(M);
   if(M){
     for(auto& F : *M){
-      Out << F.getName() << "<br>\n";
+      Out << *F.getReturnType() << " ";
+      Out << F.getName() << "(";
+      for(unsigned int I = 0; I < F.getFunctionType()->getNumParams(); I++){
+	if(I)
+	  Out << ", ";
+	Out << *F.getArg(I);
+      }
+      Out << ")";
+      Out << "<br>\n";
       for(auto& BB : F){
 	Out << "&#9;" << BB.getName() << "<br>\n";
 	for(auto& I : BB){
@@ -171,7 +179,15 @@ string htmlAfter(const Log& Log,
   if(M){
     auto Map = getInstrIDmap(M);
     for(auto& F : *M){
-      Out << F.getName() << "<br>\n";
+      Out << *F.getReturnType() << " ";
+      Out << F.getName() << "(";
+      for(unsigned int I = 0; I < F.getFunctionType()->getNumParams(); I++){
+	if(I)
+	  Out << ", ";
+	Out << *F.getArg(I);
+      }
+      Out << ")";
+      Out << "<br>\n";
       for(auto& BB : F){
 	Out << "&#9;" << BB.getName() << "<br>\n";
 	for(auto& I : BB){

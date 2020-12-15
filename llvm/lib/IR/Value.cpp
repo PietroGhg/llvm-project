@@ -493,8 +493,14 @@ void Value::doRAUW(Value *New, ReplaceMetadataUses ReplaceMetaUses) {
   }
   else if (Argument* Arg = dyn_cast<Argument>(this)){
     if(Instruction* NewI = dyn_cast<Instruction>(New)){
-      NewI->setID(Arg->getParent()->getParent());
-      errs() << "Replacing Argument " << *Arg << " with " << *NewI->getID() << "\n";
+      Function* F = Arg->getParent();
+      if(F){
+	Module* M = F->getParent();
+	if(M){
+	  NewI->setID(M);
+	  errs() << "Replacing Argument " << *Arg << " with " << *NewI->getID() << "\n";
+	}
+      }
     }
   }
 
